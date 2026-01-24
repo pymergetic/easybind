@@ -8,6 +8,7 @@
 #include <utility>
 
 #include <pymergetic/easybind/asyncio.hpp>
+#include <pymergetic/easybind/describe.hpp>
 
 namespace easybind::asyncio {
 
@@ -52,10 +53,35 @@ struct AsyncReturnWrapper<Func> {
   }
 };
 
+template <auto Method>
+struct AsyncMethodWrapper;
+
+template <typename C, typename R, typename... Args, R (C::*Method)(Args...)>
+struct AsyncMethodWrapper<Method> {
+  static nanobind::object call(C& self, Args... args) {
+    auto self_ptr = &self;
+    return call_asio_return([self_ptr](Args... inner) {
+      return (self_ptr->*Method)(std::forward<Args>(inner)...);
+    }, std::forward<Args>(args)...);
+  }
+};
+
+template <typename C, typename R, typename... Args, R (C::*Method)(Args...) const>
+struct AsyncMethodWrapper<Method> {
+  static nanobind::object call(const C& self, Args... args) {
+    auto self_ptr = &self;
+    return call_asio_return([self_ptr](Args... inner) {
+      return (self_ptr->*Method)(std::forward<Args>(inner)...);
+    }, std::forward<Args>(args)...);
+  }
+};
+
 }  // namespace easybind::asyncio
 
-// Usage: EASYBIND_REGISTER_ASYNC("pkg.name", "func_name", func);
-#define EASYBIND_REGISTER_ASYNC(PACKAGE, NAME, FUNC)                                             \
-  EASYBIND_REGISTER_PACKAGE(PACKAGE, [](nanobind::module_& m) {                                  \
-    m.def(NAME, &::easybind::asyncio::AsyncReturnWrapper<FUNC>::call);                           \
-  })
+// Usage: EASYBIND_ASYNC_METHOD(Type, method)
+#define EASYBIND_ASYNC_METHOD(TYPE, METHOD)                                                       \
+  cls.def(#METHOD, &::easybind::asyncio::AsyncMethodWrapper<&TYPE::METHOD>::call);
+
+// Usage: EASYBIND_ASYNC_METHOD_ARGS(Type, method, nb::arg("x") = 1)
+#define EASYBIND_ASYNC_METHOD_ARGS(TYPE, METHOD, ...)                                              \
+  cls.def(#METHOD, &::easybind::asyncio::AsyncMethodWrapper<&TYPE::METHOD>::call, __VA_ARGS__);

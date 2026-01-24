@@ -65,6 +65,9 @@ target_include_directories(easybind PUBLIC
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 target_include_directories(easybind PUBLIC
+    $<BUILD_INTERFACE:${PYMERGETIC_BOOST_INCLUDE_DIR}>
+)
+target_include_directories(easybind PUBLIC
     $<BUILD_INTERFACE:${magic_enum_SOURCE_DIR}/include>
 )
 

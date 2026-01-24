@@ -20,4 +20,8 @@ Widget make_widget(std::string name, int value, WidgetKind kind) {
   return w;
 }
 
+int async_add(int a, int b) {
+  return a + b;
+}
+
 }  // namespace pymergetic::easybind::sample
