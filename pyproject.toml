@@ -1,0 +1,37 @@
+[build-system]
+requires = ["scikit-build-core>=0.10", "setuptools-scm>=8"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "pymergetic-easybind"
+dynamic = ["version"]
+description = "Easybind - self-registering nanobind wrapper for PymergeticOS"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+authors = [
+  { name = "PymergeticOS Maintainers", email = "maintainers@example.com" }
+]
+keywords = ["pymergetic", "easybind", "nanobind", "bindings"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: C++",
+  "Operating System :: POSIX :: Linux",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.0.0",
+]
+
+[tool.scikit-build]
+cmake.version = ">=3.25"
+logging.level = "INFO"
+wheel.packages = ["src_py/pymergetic"]
+
+[tool.setuptools_scm]
+version_scheme = "no-guess-dev"
+local_scheme = "no-local-version"
+fallback_version = "0.0.0"
