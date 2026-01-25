@@ -1,3 +1,3 @@
 #include <pymergetic/easybind/prelude.hpp>
 
-EASYBIND_MODULE_ALL();
+EASYBIND_SHARED_OBJECT();

@@ -54,18 +54,18 @@ inline auto arg(const char* name) {
 #define EASYBIND_MODULE_PACKAGE(...)                                                               \
   EASYBIND_DETAIL_MODULE_PACKAGE_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
 
-// Usage: EASYBIND_MODULE_ALL() or EASYBIND_MODULE_ALL(module_name)
-#define EASYBIND_DETAIL_MODULE_ALL0()                                                              \
+// Usage: EASYBIND_SHARED_OBJECT() or EASYBIND_SHARED_OBJECT(module_name)
+#define EASYBIND_DETAIL_SHARED_OBJECT0()                                                           \
   EASYBIND_DETAIL_MODULE_ALL_IMPL(__cpp__, m)
-#define EASYBIND_DETAIL_MODULE_ALL1(MODULE_NAME)                                                   \
+#define EASYBIND_DETAIL_SHARED_OBJECT1(MODULE_NAME)                                                \
   EASYBIND_DETAIL_MODULE_ALL_IMPL(MODULE_NAME, m)
-#define EASYBIND_DETAIL_MODULE_ALL_CHOOSER(...)                                                    \
-  EASYBIND_DETAIL_MODULE_ALL_CHOOSER_IMPL(                                                         \
-      _easybind_dummy, __VA_ARGS__ __VA_OPT__(,) EASYBIND_DETAIL_MODULE_ALL1,                       \
-      EASYBIND_DETAIL_MODULE_ALL0)
-#define EASYBIND_DETAIL_MODULE_ALL_CHOOSER_IMPL(_1, _2, NAME, ...) NAME
-#define EASYBIND_MODULE_ALL(...)                                                                   \
-  EASYBIND_DETAIL_MODULE_ALL_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
+#define EASYBIND_DETAIL_SHARED_OBJECT_CHOOSER(...)                                                 \
+  EASYBIND_DETAIL_SHARED_OBJECT_CHOOSER_IMPL(                                                      \
+      _easybind_dummy, __VA_ARGS__ __VA_OPT__(,) EASYBIND_DETAIL_SHARED_OBJECT1,                    \
+      EASYBIND_DETAIL_SHARED_OBJECT0)
+#define EASYBIND_DETAIL_SHARED_OBJECT_CHOOSER_IMPL(_1, _2, NAME, ...) NAME
+#define EASYBIND_SHARED_OBJECT(...)                                                                \
+  EASYBIND_DETAIL_SHARED_OBJECT_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
 #define EASYBIND_DETAIL_MODULE_ALL_IMPL(MODULE_NAME, MODULE_VAR)                                   \
   NB_MODULE(MODULE_NAME, MODULE_VAR) {                                                            \
     MODULE_VAR.doc() = "easybind registry bootstrap module";                                       \
