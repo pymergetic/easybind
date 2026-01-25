@@ -74,7 +74,7 @@ target_include_directories(easybind PRIVATE
 )
 
 nanobind_add_module(easybind_internal NB_SHARED
-    src_bind/pymergetic/easybind/module.cpp
+    src_cpp/pymergetic/easybind/module.cpp
 )
 target_link_libraries(easybind_internal PRIVATE easybind::easybind)
 target_link_libraries(easybind_internal PRIVATE ${EASYBIND_PYTHON_TARGET})

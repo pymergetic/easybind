@@ -26,3 +26,10 @@ inline auto arg(const char* name) {
 // Usage: EASYBIND_MODULE_PACKAGE(module_name)
 #define EASYBIND_MODULE_PACKAGE(MODULE_NAME)                                                      \
   EASYBIND_MODULE(::easybind::detail::k_package, MODULE_NAME, m)
+
+// Usage: EASYBIND_MODULE_ALL(module_name, m)
+#define EASYBIND_MODULE_ALL(MODULE_NAME, MODULE_VAR)                                               \
+  NB_MODULE(MODULE_NAME, MODULE_VAR) {                                                            \
+    MODULE_VAR.doc() = "easybind registry bootstrap module";                                       \
+    ::easybind::Registry::get().apply_all(MODULE_VAR);                                             \
+  }
