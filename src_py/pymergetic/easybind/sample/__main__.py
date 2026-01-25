@@ -4,9 +4,15 @@ from __future__ import annotations
 
 import asyncio
 
+from pymergetic.easybind import __cpp__ as cpp_module  # type: ignore[import-not-found]
+from pymergetic.easybind import __version__ as py_version
+
 from . import SampleError, Widget, WidgetKind, async_add, make_widget, raise_error
 
 async def _run_async() -> None:
+    print(f"easybind python version: {py_version}")
+    print(f"easybind __cpp__ version: {cpp_module.__version__}")
+
     w = Widget()
     w.name = "test"
     w.value = 10

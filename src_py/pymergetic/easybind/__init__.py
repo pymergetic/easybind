@@ -1,6 +1,7 @@
 """Easybind public Python surface."""
 
-from pymergetic.easybind.__project__ import __version__
+from pymergetic.easybind.__project__ import __version__, __version_cpp__
+
 
 # Import the native module to trigger registry application.
 try:
@@ -16,4 +17,4 @@ def refresh_bindings() -> None:
     __cpp__.refresh_bindings()
 
 
-__all__ = ["__version__", "refresh_bindings"]
+__all__ = ["__version__", "__version_cpp__", "refresh_bindings"]
