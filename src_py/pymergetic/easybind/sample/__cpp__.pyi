@@ -3,6 +3,8 @@ from __future__ import annotations
 from enum import Enum
 from typing import Awaitable, Any
 
+class SampleError(RuntimeError): ...
+
 class WidgetKind(Enum):
     Basic: WidgetKind
     Fancy: WidgetKind
@@ -18,3 +20,4 @@ class Widget:
 
 def make_widget(name: str, value: int = 0, kind: WidgetKind = WidgetKind.Basic) -> Widget: ...
 def async_add(a: int, b: int) -> Any: ...
+def raise_error(message: str) -> None: ...

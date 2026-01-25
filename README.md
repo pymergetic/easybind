@@ -54,6 +54,29 @@ NB_MODULE(__cpp__, m) {
 }
 ```
 
+## Exception bindings (cross-package friendly)
+Use these helpers so C++ exceptions get stable Python counterparts and can be
+re-exported across modules.
+
+Define/bind in the owning module:
+```cpp
+#include <pymergetic/easybind/bind_utils.hpp>
+
+class SampleError : public std::runtime_error {
+public:
+    using std::runtime_error::runtime_error;
+};
+
+EASYBIND_REGISTER_EXCEPTION(SampleError);
+```
+
+Re-export from another module:
+```cpp
+#include <pymergetic/easybind/bind_utils.hpp>
+
+EASYBIND_IMPORT_EXCEPTION("pymergetic.easybind.sample.__cpp__", "SampleError");
+```
+
 ## Linker note (important)
 If you compile your distributed bind files into a static library, the linker may
 discard them unless you force a whole-archive link. Example (Linux/GCC/Clang):

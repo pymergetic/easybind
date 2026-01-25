@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 
-from . import Widget, WidgetKind, async_add, make_widget 
+from . import SampleError, Widget, WidgetKind, async_add, make_widget, raise_error
 
 async def _run_async() -> None:
     w = Widget()
@@ -20,5 +20,9 @@ async def _run_async() -> None:
 
     result = await async_add(2, 7)
     print(f"async_add(2, 7) => {result}")
+    try:
+        raise_error("boom")
+    except SampleError as exc:
+        print(f"caught SampleError: {exc}")
 
 asyncio.run(_run_async())

@@ -6,6 +6,7 @@
 #include <pymergetic/easybind/asyncio_asio.hpp>
 #include <pymergetic/easybind/describe.hpp>
 #include <pymergetic/easybind/enum_utils.hpp>
+#include <pymergetic/easybind/exceptions.hpp>
 #include <pymergetic/easybind/registry.hpp>
 
 #define EASYBIND_DETAIL_CONCAT_INNER(a, b) a##b
@@ -77,6 +78,24 @@ inline constexpr const char* k_package = "";
     });                                                                                           \
   })
 
+// Usage: EASYBIND_REGISTER_EXCEPTION(ExceptionType);
+#define EASYBIND_REGISTER_EXCEPTION(TYPE)                                                         \
+  EASYBIND_REGISTER_PACKAGE_PRI(::easybind::detail::k_package, -20, [](nanobind::module_& m) {    \
+    ::easybind::exceptions::bind<TYPE>(m, #TYPE);                                                  \
+  })
+
+// Usage: EASYBIND_REGISTER_EXCEPTION_NAME(ExceptionType, "PyName");
+#define EASYBIND_REGISTER_EXCEPTION_NAME(TYPE, PY_NAME)                                            \
+  EASYBIND_REGISTER_PACKAGE_PRI(::easybind::detail::k_package, -20, [](nanobind::module_& m) {    \
+    ::easybind::exceptions::bind<TYPE>(m, PY_NAME);                                                \
+  })
+
+// Usage: EASYBIND_IMPORT_EXCEPTION("pkg.module", "PyName");
+#define EASYBIND_IMPORT_EXCEPTION(MODULE_NAME, PY_NAME)                                            \
+  EASYBIND_REGISTER_PACKAGE_PRI(::easybind::detail::k_package, -20, [](nanobind::module_& m) {    \
+    ::easybind::exceptions::export_alias(m, MODULE_NAME, PY_NAME);                                 \
+  })
+
 // Compatibility alias for PY_* naming.
 #define PY_REGISTER EASYBIND_REGISTER
 
@@ -92,6 +111,9 @@ inline constexpr const char* k_package = "";
 #define EASYBIND_REGISTER_CLASS(...)
 #define EASYBIND_REGISTER_CLASS_WITH(...)
 #define EASYBIND_REGISTER_CLASS_METHODS(...)
+#define EASYBIND_REGISTER_EXCEPTION(...)
+#define EASYBIND_REGISTER_EXCEPTION_NAME(...)
+#define EASYBIND_IMPORT_EXCEPTION(...)
 #define PY_REGISTER(...)
 
 #endif

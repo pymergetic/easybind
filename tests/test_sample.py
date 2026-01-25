@@ -33,3 +33,12 @@ def test_async_methods_and_function() -> None:
         assert await sample.async_add(2, 9) == 11
 
     asyncio.run(run())
+
+
+def test_sample_error() -> None:
+    try:
+        sample.raise_error("boom")
+    except sample.SampleError as exc:
+        assert "boom" in str(exc)
+    else:
+        raise AssertionError("SampleError was not raised")
