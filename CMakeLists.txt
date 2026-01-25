@@ -5,6 +5,11 @@ project(easybind LANGUAGES CXX)
 include(GNUInstallDirs)
 include(FetchContent)
 
+option(EASYBIND_SKIP_INSTALL "Skip installing easybind artifacts" OFF)
+if(NOT PROJECT_IS_TOP_LEVEL)
+    set(EASYBIND_SKIP_INSTALL ON)
+endif()
+
 # Ensure Python development headers/targets are available for nanobind + modules.
 find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
 
@@ -160,55 +165,57 @@ else()
     )
 endif()
 
-install(DIRECTORY src_cpp/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(DIRECTORY ${magic_enum_SOURCE_DIR}/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+if(NOT EASYBIND_SKIP_INSTALL)
+    install(DIRECTORY src_cpp/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    install(DIRECTORY ${magic_enum_SOURCE_DIR}/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-install(TARGETS easybind
-    EXPORT easybindTargets
-    LIBRARY DESTINATION pymergetic/easybind
-    RUNTIME DESTINATION pymergetic/easybind
-    ARCHIVE DESTINATION pymergetic/easybind
-)
-
-install(TARGETS easybind_build_interface
-    EXPORT easybindTargets
-)
-
-install(TARGETS easybind_internal
-    LIBRARY DESTINATION pymergetic/easybind
-    RUNTIME DESTINATION pymergetic/easybind
-    ARCHIVE DESTINATION pymergetic/easybind
-)
-
-install(TARGETS easybind_sample_internal
-    LIBRARY DESTINATION pymergetic/easybind/sample
-    RUNTIME DESTINATION pymergetic/easybind/sample
-    ARCHIVE DESTINATION pymergetic/easybind/sample
-)
-
-# If nanobind is built as a shared library, ship it alongside extensions so
-# `libnanobind.so` is resolvable at runtime.
-if(TARGET nanobind)
-    install(TARGETS nanobind
+    install(TARGETS easybind
+        EXPORT easybindTargets
         LIBRARY DESTINATION pymergetic/easybind
         RUNTIME DESTINATION pymergetic/easybind
         ARCHIVE DESTINATION pymergetic/easybind
     )
+
+    install(TARGETS easybind_build_interface
+        EXPORT easybindTargets
+    )
+
+    install(TARGETS easybind_internal
+        LIBRARY DESTINATION pymergetic/easybind
+        RUNTIME DESTINATION pymergetic/easybind
+        ARCHIVE DESTINATION pymergetic/easybind
+    )
+
+    install(TARGETS easybind_sample_internal
+        LIBRARY DESTINATION pymergetic/easybind/sample
+        RUNTIME DESTINATION pymergetic/easybind/sample
+        ARCHIVE DESTINATION pymergetic/easybind/sample
+    )
+
+    # If nanobind is built as a shared library, ship it alongside extensions so
+    # `libnanobind.so` is resolvable at runtime.
+    if(TARGET nanobind)
+        install(TARGETS nanobind
+            LIBRARY DESTINATION pymergetic/easybind
+            RUNTIME DESTINATION pymergetic/easybind
+            ARCHIVE DESTINATION pymergetic/easybind
+        )
+    endif()
+
+    install(EXPORT easybindTargets
+        FILE easybindTargets.cmake
+        NAMESPACE easybind::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/easybind
+    )
+
+    include(CMakePackageConfigHelpers)
+    configure_package_config_file(
+        "${CMAKE_CURRENT_LIST_DIR}/cmake/easybindConfig.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/easybindConfig.cmake"
+        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/easybind
+    )
+
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/easybindConfig.cmake"
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/easybind
+    )
 endif()
-
-install(EXPORT easybindTargets
-    FILE easybindTargets.cmake
-    NAMESPACE easybind::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/easybind
-)
-
-include(CMakePackageConfigHelpers)
-configure_package_config_file(
-    "${CMAKE_CURRENT_LIST_DIR}/cmake/easybindConfig.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/easybindConfig.cmake"
-    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/easybind
-)
-
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/easybindConfig.cmake"
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/easybind
-)
