@@ -14,6 +14,25 @@ inline auto arg(const char* name) {
   return nanobind::arg(name);
 }
 
+namespace detail {
+
+inline std::string ns_to_package(const char* ns) {
+  std::string out;
+  out.reserve(std::char_traits<char>::length(ns));
+  for (std::size_t i = 0; ns[i] != '\0';) {
+    if (ns[i] == ':' && ns[i + 1] == ':') {
+      out.push_back('.');
+      i += 2;
+      continue;
+    }
+    out.push_back(ns[i]);
+    ++i;
+  }
+  return out;
+}
+
+}  // namespace detail
+
 }  // namespace easybind
 
 // Usage: EASYBIND_MODULE("pkg.name"), EASYBIND_MODULE("pkg.name", module_name),
@@ -31,6 +50,7 @@ inline auto arg(const char* name) {
 #define EASYBIND_MODULE(...)                                                                       \
   EASYBIND_DETAIL_MODULE_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
 #define EASYBIND_DETAIL_MODULE_IMPL(PACKAGE, MODULE_NAME, MODULE_VAR)                              \
+  static const char* k_package = PACKAGE;                                                          \
   NB_MODULE(MODULE_NAME, MODULE_VAR) {                                                            \
     MODULE_VAR.doc() = std::string(PACKAGE) + " module";                                           \
     ::easybind::Registry::get().apply_all_for(PACKAGE, MODULE_VAR);                               \
@@ -39,6 +59,14 @@ inline auto arg(const char* name) {
       ::easybind::Registry::get().apply_pending_for(PACKAGE, module);                             \
     }, "Apply newly registered bindings for this module.");                                       \
   }
+
+// Usage: EASYBIND_NS(my::namespace) { ... }
+#define EASYBIND_NS(NS)                                                                            \
+  EASYBIND_NS_IMPL(NS, EASYBIND_DETAIL_CONCAT(_easybind_pkg_, __COUNTER__))
+#define EASYBIND_NS_IMPL(NS, PKG_VAR)                                                              \
+  static const std::string PKG_VAR = ::easybind::detail::ns_to_package(#NS);                        \
+  EASYBIND_MODULE(PKG_VAR.c_str());                                                                \
+  namespace NS
 
 // Usage: EASYBIND_MODULE_PACKAGE() or EASYBIND_MODULE_PACKAGE(module_name)
 #define EASYBIND_DETAIL_MODULE_PACKAGE0()                                                         \

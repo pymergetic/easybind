@@ -18,10 +18,6 @@
 
 #if EASYBIND_ENABLED
 
-// Usage: EASYBIND_PACKAGE("pkg.name");
-#define EASYBIND_PACKAGE(PACKAGE)                                                                 \
-  static constexpr const char* k_package = PACKAGE
-
 // Usage: EASYBIND_REGISTER([](nanobind::module_& m) { ... });
 #define EASYBIND_REGISTER(LAMBDA) \
   static ::easybind::AutoRegister EASYBIND_DETAIL_CONCAT(_easybind_reg_, __COUNTER__)(LAMBDA)
@@ -95,7 +91,6 @@
 
 #else
 
-#define EASYBIND_PACKAGE(...)
 #define EASYBIND_REGISTER(...)
 #define EASYBIND_REGISTER_PACKAGE(...)
 #define EASYBIND_REGISTER_PACKAGE_PRI(...)
