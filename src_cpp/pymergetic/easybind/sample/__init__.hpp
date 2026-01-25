@@ -34,4 +34,3 @@ int async_add(int a, int b);
 void raise_error(const std::string& message);
 
 }  // namespace pymergetic::easybind::sample
-

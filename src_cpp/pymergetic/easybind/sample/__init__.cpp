@@ -1,5 +1,5 @@
 #include <pymergetic/easybind/prelude.hpp>
-#include <pymergetic/easybind/sample/sample.hpp>
+#include <pymergetic/easybind/sample/__init__.hpp>
 
 
 namespace pymergetic::easybind::sample {

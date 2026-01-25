@@ -6,6 +6,19 @@ Simple self-registering helpers for distributed nanobind bindings.
 The Python package is intentionally thin. It currently exposes only
 `__version__` and exists to ship the CMake/headers as a standard distribution.
 
+## Build-time SDK
+`easybind` provides the canonical CMake helper for hybrid extensions:
+
+- `easybind::build_interface` (INTERFACE): baseline C++20 + PIC + shared include paths
+- `easybind_add_extension(target ...)`: wraps `nanobind_add_module(... NB_SHARED ...)`
+
+Example:
+```cmake
+find_package(easybind CONFIG REQUIRED)
+easybind_add_extension(my_module src_bind/pymergetic/my_pkg/__cpp__/module.cpp)
+target_link_libraries(my_module PRIVATE easybind::easybind)
+```
+
 ## Core idea
 - Each binding file registers a callback during static initialization.
 - The module entry point calls `easybind::Registry::get().apply_all(m)`.

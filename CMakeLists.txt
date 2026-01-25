@@ -52,19 +52,50 @@ foreach(_nb_tgt IN ITEMS nanobind nanobind-static nanobind_shared)
     endif()
 endforeach()
 
+add_library(easybind_build_interface INTERFACE)
+add_library(easybind::build_interface ALIAS easybind_build_interface)
+
+target_compile_features(easybind_build_interface INTERFACE cxx_std_20)
+set_target_properties(easybind_build_interface PROPERTIES
+    INTERFACE_POSITION_INDEPENDENT_CODE ON
+)
+
+target_include_directories(easybind_build_interface INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src_cpp>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    $<BUILD_INTERFACE:${PYMERGETIC_BOOST_INCLUDE_DIR}>
+)
+
+function(easybind_add_extension target_name)
+    nanobind_add_module(${target_name} NB_SHARED ${ARGN})
+    target_link_libraries(${target_name} PRIVATE easybind::build_interface)
+    target_link_libraries(${target_name} PRIVATE ${EASYBIND_PYTHON_TARGET})
+    target_include_directories(${target_name} PRIVATE ${PYMERGETIC_BOOST_INCLUDE_DIR})
+    target_compile_definitions(${target_name} PRIVATE BOOST_ERROR_CODE_HEADER_ONLY=1 BOOST_SYSTEM_NO_DEPRECATED=1)
+    if(APPLE)
+        set_target_properties(${target_name} PROPERTIES
+            BUILD_RPATH "@loader_path"
+            INSTALL_RPATH "@loader_path"
+        )
+    else()
+        set_target_properties(${target_name} PROPERTIES
+            BUILD_RPATH "$ORIGIN"
+            INSTALL_RPATH "$ORIGIN"
+        )
+    endif()
+endfunction()
+
 add_library(easybind SHARED
     src_cpp/pymergetic/easybind/registry.cpp
 )
 add_library(easybind::easybind ALIAS easybind)
 
 target_compile_features(easybind PUBLIC cxx_std_20)
+target_link_libraries(easybind PUBLIC easybind::build_interface)
 
 target_include_directories(easybind PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src_cpp>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-)
-target_include_directories(easybind PUBLIC
-    $<BUILD_INTERFACE:${PYMERGETIC_BOOST_INCLUDE_DIR}>
 )
 target_include_directories(easybind PUBLIC
     $<BUILD_INTERFACE:${magic_enum_SOURCE_DIR}/include>
@@ -73,11 +104,10 @@ target_include_directories(easybind PRIVATE
     $<BUILD_INTERFACE:${nanobind_SOURCE_DIR}/include>
 )
 
-nanobind_add_module(easybind_internal NB_SHARED
-    src_cpp/pymergetic/easybind/module.cpp
+easybind_add_extension(easybind_internal
+    src_cpp/pymergetic/easybind/__cpp__.cpp
 )
 target_link_libraries(easybind_internal PRIVATE easybind::easybind)
-target_link_libraries(easybind_internal PRIVATE ${EASYBIND_PYTHON_TARGET})
 target_include_directories(easybind_internal PRIVATE ${magic_enum_SOURCE_DIR}/include)
 set_target_properties(easybind_internal PROPERTIES
     OUTPUT_NAME "__cpp__"
@@ -96,14 +126,11 @@ else()
     )
 endif()
 
-nanobind_add_module(easybind_sample_internal NB_SHARED
-    src_cpp/pymergetic/easybind/sample/sample.cpp
+easybind_add_extension(easybind_sample_internal
+    src_cpp/pymergetic/easybind/sample/__init__.cpp
 )
 target_link_libraries(easybind_sample_internal PRIVATE easybind::easybind)
-target_link_libraries(easybind_sample_internal PRIVATE ${EASYBIND_PYTHON_TARGET})
 target_include_directories(easybind_sample_internal PRIVATE ${magic_enum_SOURCE_DIR}/include)
-target_include_directories(easybind_sample_internal PRIVATE ${PYMERGETIC_BOOST_INCLUDE_DIR})
-target_compile_definitions(easybind_sample_internal PRIVATE BOOST_ERROR_CODE_HEADER_ONLY=1 BOOST_SYSTEM_NO_DEPRECATED=1)
 target_compile_definitions(easybind_sample_internal PRIVATE PYMERGETIC_BINDINGS=1)
 set_target_properties(easybind_sample_internal PROPERTIES
     OUTPUT_NAME "__cpp__"
@@ -130,6 +157,10 @@ install(TARGETS easybind
     LIBRARY DESTINATION pymergetic/easybind
     RUNTIME DESTINATION pymergetic/easybind
     ARCHIVE DESTINATION pymergetic/easybind
+)
+
+install(TARGETS easybind_build_interface
+    EXPORT easybindTargets
 )
 
 install(TARGETS easybind_internal
