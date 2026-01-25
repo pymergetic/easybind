@@ -26,6 +26,10 @@
 #define EASYBIND_REGISTER_ATTR(NAME, VALUE)                                                       \
   EASYBIND_REGISTER([](nanobind::module_& m) { m.attr(NAME) = (VALUE); })
 
+// Usage: EASYBIND_REGISTER_PACKAGE_ATTR("name", value);
+#define EASYBIND_REGISTER_PACKAGE_ATTR(NAME, VALUE)                                               \
+  EASYBIND_REGISTER_PACKAGE(k_package, [](nanobind::module_& m) { m.attr(NAME) = (VALUE); })
+
 // Usage: EASYBIND_REGISTER_PACKAGE("pkg.name", [](nanobind::module_& m) { ... });
 #define EASYBIND_REGISTER_PACKAGE(PACKAGE, LAMBDA) \
   static ::easybind::AutoRegister EASYBIND_DETAIL_CONCAT(_easybind_reg_, __COUNTER__)(PACKAGE, 0, LAMBDA)
