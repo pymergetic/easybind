@@ -4,6 +4,7 @@
 
 #include <boost/describe.hpp>
 
+
 namespace pymergetic::easybind::sample {
 
 enum class WidgetKind {
@@ -26,3 +27,4 @@ Widget make_widget(std::string name, int value = 0, WidgetKind kind = WidgetKind
 int async_add(int a, int b);
 
 }  // namespace pymergetic::easybind::sample
+

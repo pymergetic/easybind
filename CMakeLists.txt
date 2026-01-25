@@ -54,7 +54,6 @@ endforeach()
 
 add_library(easybind SHARED
     src_cpp/pymergetic/easybind/registry.cpp
-    src_cpp/pymergetic/easybind/sample/sample.cpp
 )
 add_library(easybind::easybind ALIAS easybind)
 
@@ -69,6 +68,9 @@ target_include_directories(easybind PUBLIC
 )
 target_include_directories(easybind PUBLIC
     $<BUILD_INTERFACE:${magic_enum_SOURCE_DIR}/include>
+)
+target_include_directories(easybind PRIVATE
+    $<BUILD_INTERFACE:${nanobind_SOURCE_DIR}/include>
 )
 
 nanobind_add_module(easybind_internal NB_SHARED
@@ -91,14 +93,14 @@ else()
 endif()
 
 nanobind_add_module(easybind_sample_internal NB_SHARED
-    src_bind/pymergetic/easybind/sample/module.cpp
-    src_bind/pymergetic/easybind/sample/bind.cpp
+    src_cpp/pymergetic/easybind/sample/sample.cpp
 )
 target_link_libraries(easybind_sample_internal PRIVATE easybind::easybind)
 target_link_libraries(easybind_sample_internal PRIVATE ${EASYBIND_PYTHON_TARGET})
 target_include_directories(easybind_sample_internal PRIVATE ${magic_enum_SOURCE_DIR}/include)
 target_include_directories(easybind_sample_internal PRIVATE ${PYMERGETIC_BOOST_INCLUDE_DIR})
 target_compile_definitions(easybind_sample_internal PRIVATE BOOST_ERROR_CODE_HEADER_ONLY=1 BOOST_SYSTEM_NO_DEPRECATED=1)
+target_compile_definitions(easybind_sample_internal PRIVATE PYMERGETIC_BINDINGS=1)
 set_target_properties(easybind_sample_internal PROPERTIES OUTPUT_NAME "_sample")
 if(APPLE)
     set_target_properties(easybind_sample_internal PROPERTIES
