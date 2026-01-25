@@ -23,6 +23,8 @@ public:
 
   void apply_all(nanobind::module_& m) const;
   void apply_all_for(const std::string& package, nanobind::module_& m) const;
+  void apply_pending(nanobind::module_& m) const;
+  void apply_pending_for(const std::string& package, nanobind::module_& m) const;
 
 private:
   Registry() = default;
@@ -31,6 +33,7 @@ private:
     std::string package;
     int priority;
     BindCallback cb;
+    mutable bool applied = false;
   };
 
   mutable std::mutex mutex_;

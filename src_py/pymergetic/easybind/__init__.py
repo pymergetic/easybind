@@ -4,8 +4,16 @@ from pymergetic.easybind.__project__ import __version__
 
 # Import the native module to trigger registry application.
 try:
-    from . import _internal as _native  # noqa: F401
+    from . import __cpp__  # noqa: F401
 except Exception:
-    _native = None
+    __cpp__ = None
 
-__all__ = ["__version__"]
+
+def refresh_bindings() -> None:
+    """Apply newly registered native bindings to this module."""
+    if __cpp__ is None:
+        raise RuntimeError("easybind native module is not available")
+    __cpp__.refresh_bindings()
+
+
+__all__ = ["__version__", "refresh_bindings"]

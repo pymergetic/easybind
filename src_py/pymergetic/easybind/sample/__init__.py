@@ -1,13 +1,15 @@
 """Sample bindings for easybind."""
 
 try:
-    from . import _sample as _native  # type: ignore[import-not-found]  # noqa: F401
+    from . import __cpp__  # type: ignore[import-not-found]  # noqa: F401
 except Exception:
-    _native = None
+    __cpp__ = None
 
-if _native is not None:
-    Widget = _native.Widget
-    WidgetKind = _native.WidgetKind
-    __all__ = ["Widget", "WidgetKind"]
+if __cpp__ is not None:
+    Widget = __cpp__.Widget
+    WidgetKind = __cpp__.WidgetKind
+    async_add = __cpp__.async_add
+    make_widget = __cpp__.make_widget
+    __all__ = ["Widget", "WidgetKind", "async_add", "make_widget"]
 else:
     __all__ = []

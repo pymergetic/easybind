@@ -11,7 +11,7 @@ The Python package is intentionally thin. It currently exposes only
 - The module entry point calls `easybind::Registry::get().apply_all(m)`.
 - No centralized `bind_*` list is required.
 - The registry lives in the `easybind` shared library so multiple extensions share it.
-- The pip-built package ships `_internal` so imports trigger binding registry.
+- The pip-built package ships `__cpp__` so imports trigger binding registry.
 - A minimal sample module lives at `pymergetic.easybind.sample`.
 
 ## Smallest possible example
@@ -49,7 +49,7 @@ PY_REGISTER([](nanobind::module_& m) {
 #include <nanobind/nanobind.h>
 #include <pymergetic/easybind/registry.hpp>
 
-NB_MODULE(_internal, m) {
+NB_MODULE(__cpp__, m) {
     easybind::Registry::get().apply_all(m);
 }
 ```
@@ -59,7 +59,7 @@ If you compile your distributed bind files into a static library, the linker may
 discard them unless you force a whole-archive link. Example (Linux/GCC/Clang):
 ```cmake
 add_library(my_bindings STATIC ${BIND_SOURCES})
-target_link_libraries(_internal PRIVATE
+target_link_libraries(__cpp__ PRIVATE
     "-Wl,--whole-archive" my_bindings "-Wl,--no-whole-archive"
 )
 ```

@@ -2,14 +2,9 @@
 
 from __future__ import annotations
 
-from . import _native
-
-if _native is None:
-    raise RuntimeError("pymergetic.easybind.sample native module is not available")
-
 import asyncio
 
-from ._sample import Widget, WidgetKind, async_add, make_widget  # type: ignore[import-not-found]
+from . import Widget, WidgetKind, async_add, make_widget 
 
 async def _run_async() -> None:
     w = Widget()

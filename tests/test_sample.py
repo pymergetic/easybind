@@ -1,6 +1,6 @@
 import asyncio
 
-from pymergetic.easybind.sample import _sample as sample  # type: ignore[import-not-found]
+from pymergetic.easybind.sample import __cpp__ as sample  # type: ignore[import-not-found]
 
 
 def test_widget_fields_and_enum() -> None:

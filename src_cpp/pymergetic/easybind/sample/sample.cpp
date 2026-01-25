@@ -4,7 +4,7 @@
 
 namespace pymergetic::easybind::sample {
 
-  
+
 EASYBIND_PACKAGE("pymergetic.easybind.sample");
 EASYBIND_REGISTER_ENUM(WidgetKind);
 EASYBIND_REGISTER_CLASS_METHODS(
@@ -47,4 +47,4 @@ int async_add(int a, int b) {
 }  // namespace pymergetic::easybind::sample
 
 
-EASYBIND_MODULE_PACKAGE(_sample);
+EASYBIND_MODULE_PACKAGE(__cpp__);

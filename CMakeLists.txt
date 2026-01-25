@@ -79,7 +79,11 @@ nanobind_add_module(easybind_internal NB_SHARED
 target_link_libraries(easybind_internal PRIVATE easybind::easybind)
 target_link_libraries(easybind_internal PRIVATE ${EASYBIND_PYTHON_TARGET})
 target_include_directories(easybind_internal PRIVATE ${magic_enum_SOURCE_DIR}/include)
-set_target_properties(easybind_internal PROPERTIES OUTPUT_NAME "_internal")
+set_target_properties(easybind_internal PROPERTIES
+    OUTPUT_NAME "__cpp__"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/pymergetic/easybind"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/pymergetic/easybind"
+)
 if(APPLE)
     set_target_properties(easybind_internal PROPERTIES
         BUILD_RPATH "@loader_path"
@@ -101,7 +105,11 @@ target_include_directories(easybind_sample_internal PRIVATE ${magic_enum_SOURCE_
 target_include_directories(easybind_sample_internal PRIVATE ${PYMERGETIC_BOOST_INCLUDE_DIR})
 target_compile_definitions(easybind_sample_internal PRIVATE BOOST_ERROR_CODE_HEADER_ONLY=1 BOOST_SYSTEM_NO_DEPRECATED=1)
 target_compile_definitions(easybind_sample_internal PRIVATE PYMERGETIC_BINDINGS=1)
-set_target_properties(easybind_sample_internal PROPERTIES OUTPUT_NAME "_sample")
+set_target_properties(easybind_sample_internal PROPERTIES
+    OUTPUT_NAME "__cpp__"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/pymergetic/easybind/sample"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/pymergetic/easybind/sample"
+)
 if(APPLE)
     set_target_properties(easybind_sample_internal PROPERTIES
         BUILD_RPATH "@loader_path;@loader_path/.."
