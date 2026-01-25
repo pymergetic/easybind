@@ -26,4 +26,3 @@ EASYBIND_REGISTER_FUNC(make_widget,
 }  // namespace pymergetic::easybind::sample
 
 
-//EASYBIND_MODULE_PACKAGE(__cpp__);
