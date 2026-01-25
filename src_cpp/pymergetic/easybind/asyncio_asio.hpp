@@ -1,5 +1,6 @@
 #pragma once
 
+#include <boost/asio/executor_work_guard.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/post.hpp>
 
@@ -12,16 +13,38 @@
 
 namespace easybind::asyncio {
 
+namespace detail {
+
+struct Worker {
+  boost::asio::io_context io;
+  boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work;
+  std::thread thread;
+
+  Worker() : io(1), work(boost::asio::make_work_guard(io)), thread([this]() { io.run(); }) {}
+
+  ~Worker() {
+    work.reset();
+    io.stop();
+    if (thread.joinable()) {
+      thread.join();
+    }
+  }
+};
+
+inline Worker& worker() {
+  static Worker instance;
+  return instance;
+}
+
+}  // namespace detail
+
 template <typename Fn>
 inline nanobind::object future_from_asio_post(Fn&& fn) {
   return future_from([fn = std::forward<Fn>(fn)](auto resolve, auto reject) mutable {
-    std::thread([resolve = std::move(resolve), reject = std::move(reject), fn = std::move(fn)]() mutable {
-      boost::asio::io_context io(1);
-      boost::asio::post(io, [resolve = std::move(resolve), reject = std::move(reject), fn = std::move(fn)]() mutable {
-        fn(std::move(resolve), std::move(reject));
-      });
-      io.run();
-    }).detach();
+    auto& io = detail::worker().io;
+    boost::asio::post(io, [resolve = std::move(resolve), reject = std::move(reject), fn = std::move(fn)]() mutable {
+      fn(std::move(resolve), std::move(reject));
+    });
   });
 }
 

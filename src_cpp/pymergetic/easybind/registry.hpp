@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <mutex>
 #include <string>
 #include <utility>
 #include <vector>
@@ -32,6 +33,7 @@ private:
     BindCallback cb;
   };
 
+  mutable std::mutex mutex_;
   std::vector<Entry> bindings_;
 };
 
