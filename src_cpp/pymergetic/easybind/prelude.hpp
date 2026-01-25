@@ -42,9 +42,9 @@ inline auto arg(const char* name) {
 
 // Usage: EASYBIND_MODULE_PACKAGE() or EASYBIND_MODULE_PACKAGE(module_name)
 #define EASYBIND_DETAIL_MODULE_PACKAGE0()                                                         \
-  EASYBIND_MODULE(::easybind::detail::k_package, __cpp__, m)
+  EASYBIND_MODULE(k_package, __cpp__, m)
 #define EASYBIND_DETAIL_MODULE_PACKAGE1(MODULE_NAME)                                               \
-  EASYBIND_MODULE(::easybind::detail::k_package, MODULE_NAME, m)
+  EASYBIND_MODULE(k_package, MODULE_NAME, m)
 #define EASYBIND_DETAIL_MODULE_PACKAGE_CHOOSER(...)                                                \
   EASYBIND_DETAIL_MODULE_PACKAGE_CHOOSER_IMPL(                                                     \
       _easybind_dummy, __VA_ARGS__ __VA_OPT__(,) EASYBIND_DETAIL_MODULE_PACKAGE1,                  \

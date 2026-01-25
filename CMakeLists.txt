@@ -127,6 +127,7 @@ else()
 endif()
 
 easybind_add_extension(easybind_sample_internal
+    src_cpp/pymergetic/easybind/sample/__cpp__.cpp
     src_cpp/pymergetic/easybind/sample/__init__.cpp
 )
 target_link_libraries(easybind_sample_internal PRIVATE easybind::easybind)

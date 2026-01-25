@@ -16,17 +16,11 @@
 #define EASYBIND_ENABLED 1
 #endif
 
-namespace easybind::detail {
-inline constexpr const char* k_package = "";
-}  // namespace easybind::detail
-
 #if EASYBIND_ENABLED
 
 // Usage: EASYBIND_PACKAGE("pkg.name");
 #define EASYBIND_PACKAGE(PACKAGE)                                                                 \
-  namespace easybind::detail {                                                                     \
-  inline constexpr const char* k_package = PACKAGE;                                                \
-  }
+  static constexpr const char* k_package = PACKAGE
 
 // Usage: EASYBIND_REGISTER([](nanobind::module_& m) { ... });
 #define EASYBIND_REGISTER(LAMBDA) \
@@ -42,37 +36,37 @@ inline constexpr const char* k_package = "";
 
 // Usage: EASYBIND_REGISTER_ENUM(EnumType);
 #define EASYBIND_REGISTER_ENUM(TYPE)                                                              \
-  EASYBIND_REGISTER_PACKAGE_PRI(::easybind::detail::k_package, -10, [](nanobind::module_& m) {    \
+  EASYBIND_REGISTER_PACKAGE_PRI(k_package, -10, [](nanobind::module_& m) {                         \
     ::easybind::enums::bind<TYPE>(m, #TYPE);                                                      \
   })
 
 // Usage: EASYBIND_REGISTER_FUNC(func, nb::arg("x") = 1, ...);
 #define EASYBIND_REGISTER_FUNC(FUNC, ...)                                                         \
-  EASYBIND_REGISTER_PACKAGE(::easybind::detail::k_package, [](nanobind::module_& m) {             \
+  EASYBIND_REGISTER_PACKAGE(k_package, [](nanobind::module_& m) {                                 \
     m.def(#FUNC, &FUNC __VA_OPT__(, ) __VA_ARGS__);                                                \
   })
 
 // Usage: EASYBIND_REGISTER_ASYNC(func, nb::arg("x") = 1, ...);
 #define EASYBIND_REGISTER_ASYNC(FUNC, ...)                                                        \
-  EASYBIND_REGISTER_PACKAGE(::easybind::detail::k_package, [](nanobind::module_& m) {             \
+  EASYBIND_REGISTER_PACKAGE(k_package, [](nanobind::module_& m) {                                 \
     m.def(#FUNC, &::easybind::asyncio::AsyncReturnWrapper<FUNC>::call __VA_OPT__(, ) __VA_ARGS__); \
   })
 
 // Usage: EASYBIND_REGISTER_CLASS(Type)
 #define EASYBIND_REGISTER_CLASS(TYPE)                                                             \
-  EASYBIND_REGISTER_PACKAGE(::easybind::detail::k_package, [](nanobind::module_& m) {             \
+  EASYBIND_REGISTER_PACKAGE(k_package, [](nanobind::module_& m) {                                 \
     ::easybind::describe::bind_struct<TYPE>(m, #TYPE);                                            \
   })
 
 // Usage: EASYBIND_REGISTER_CLASS_WITH(Type, [](auto& cls) { ... });
 #define EASYBIND_REGISTER_CLASS_WITH(TYPE, FN)                                                     \
-  EASYBIND_REGISTER_PACKAGE(::easybind::detail::k_package, [](nanobind::module_& m) {             \
+  EASYBIND_REGISTER_PACKAGE(k_package, [](nanobind::module_& m) {                                 \
     ::easybind::describe::bind_struct<TYPE>(m, #TYPE, FN);                                         \
   })
 
 // Usage: EASYBIND_REGISTER_CLASS_METHODS(Type, EASYBIND_DEF_METHOD(...), ...);
 #define EASYBIND_REGISTER_CLASS_METHODS(TYPE, ...)                                                 \
-  EASYBIND_REGISTER_PACKAGE(::easybind::detail::k_package, [](nanobind::module_& m) {             \
+  EASYBIND_REGISTER_PACKAGE(k_package, [](nanobind::module_& m) {                                 \
     ::easybind::describe::bind_struct<TYPE>(m, #TYPE, [](auto& cls) {                              \
       __VA_ARGS__                                                                                 \
     });                                                                                           \
@@ -80,19 +74,19 @@ inline constexpr const char* k_package = "";
 
 // Usage: EASYBIND_REGISTER_EXCEPTION(ExceptionType);
 #define EASYBIND_REGISTER_EXCEPTION(TYPE)                                                         \
-  EASYBIND_REGISTER_PACKAGE_PRI(::easybind::detail::k_package, -20, [](nanobind::module_& m) {    \
+  EASYBIND_REGISTER_PACKAGE_PRI(k_package, -20, [](nanobind::module_& m) {                         \
     ::easybind::exceptions::bind<TYPE>(m, #TYPE);                                                  \
   })
 
 // Usage: EASYBIND_REGISTER_EXCEPTION_NAME(ExceptionType, "PyName");
 #define EASYBIND_REGISTER_EXCEPTION_NAME(TYPE, PY_NAME)                                            \
-  EASYBIND_REGISTER_PACKAGE_PRI(::easybind::detail::k_package, -20, [](nanobind::module_& m) {    \
+  EASYBIND_REGISTER_PACKAGE_PRI(k_package, -20, [](nanobind::module_& m) {                         \
     ::easybind::exceptions::bind<TYPE>(m, PY_NAME);                                                \
   })
 
 // Usage: EASYBIND_IMPORT_EXCEPTION("pkg.module", "PyName");
 #define EASYBIND_IMPORT_EXCEPTION(MODULE_NAME, PY_NAME)                                            \
-  EASYBIND_REGISTER_PACKAGE_PRI(::easybind::detail::k_package, -20, [](nanobind::module_& m) {    \
+  EASYBIND_REGISTER_PACKAGE_PRI(k_package, -20, [](nanobind::module_& m) {                         \
     ::easybind::exceptions::export_alias(m, MODULE_NAME, PY_NAME);                                 \
   })
 
