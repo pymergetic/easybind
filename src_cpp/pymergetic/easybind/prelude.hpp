@@ -8,6 +8,10 @@
 #include <pymergetic/easybind/asyncio_asio.hpp>
 #include <pymergetic/easybind/bind_utils.hpp>
 
+#ifndef EASYBIND_BUILD_VERSION
+#define EASYBIND_BUILD_VERSION "0.0.0"
+#endif
+
 namespace easybind {
 
 inline auto arg(const char* name) {
@@ -69,6 +73,8 @@ inline auto arg(const char* name) {
 #define EASYBIND_DETAIL_MODULE_ALL_IMPL(MODULE_NAME, MODULE_VAR)                                   \
   NB_MODULE(MODULE_NAME, MODULE_VAR) {                                                            \
     MODULE_VAR.doc() = "easybind registry bootstrap module";                                       \
+    /* Populate __version__ from build metadata when available. */                                 \
+    MODULE_VAR.attr("__version__") = EASYBIND_BUILD_VERSION;                                       \
     ::easybind::Registry::get().apply_all(MODULE_VAR);                                             \
     MODULE_VAR.def("refresh_bindings", [MODULE_VAR]() {                                           \
       auto module = MODULE_VAR;                                                                   \

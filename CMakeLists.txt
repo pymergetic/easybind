@@ -106,7 +106,6 @@ target_include_directories(easybind PRIVATE
 
 easybind_add_extension(easybind_internal
     src_cpp/pymergetic/easybind/__cpp__.cpp
-    src_cpp/pymergetic/easybind/version/__init__.cpp
 )
 target_link_libraries(easybind_internal PRIVATE easybind::easybind)
 target_include_directories(easybind_internal PRIVATE ${magic_enum_SOURCE_DIR}/include)
@@ -134,30 +133,6 @@ else()
     set_target_properties(easybind_internal PROPERTIES
         BUILD_RPATH "$ORIGIN"
         INSTALL_RPATH "$ORIGIN"
-    )
-endif()
-
-easybind_add_extension(easybind_version_internal
-    src_cpp/pymergetic/easybind/version/__cpp__.cpp
-    src_cpp/pymergetic/easybind/version/__init__.cpp
-)
-target_link_libraries(easybind_version_internal PRIVATE easybind::easybind)
-target_include_directories(easybind_version_internal PRIVATE ${magic_enum_SOURCE_DIR}/include)
-target_compile_definitions(easybind_version_internal PRIVATE EASYBIND_BUILD_VERSION="${_easybind_build_version}")
-set_target_properties(easybind_version_internal PROPERTIES
-    OUTPUT_NAME "__cpp__"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/pymergetic/easybind/version"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/pymergetic/easybind/version"
-)
-if(APPLE)
-    set_target_properties(easybind_version_internal PROPERTIES
-        BUILD_RPATH "@loader_path;@loader_path/.."
-        INSTALL_RPATH "@loader_path;@loader_path/.."
-    )
-else()
-    set_target_properties(easybind_version_internal PROPERTIES
-        BUILD_RPATH "$ORIGIN;$ORIGIN/.."
-        INSTALL_RPATH "$ORIGIN;$ORIGIN/.."
     )
 endif()
 
@@ -203,12 +178,6 @@ install(TARGETS easybind_internal
     LIBRARY DESTINATION pymergetic/easybind
     RUNTIME DESTINATION pymergetic/easybind
     ARCHIVE DESTINATION pymergetic/easybind
-)
-
-install(TARGETS easybind_version_internal
-    LIBRARY DESTINATION pymergetic/easybind/version
-    RUNTIME DESTINATION pymergetic/easybind/version
-    ARCHIVE DESTINATION pymergetic/easybind/version
 )
 
 install(TARGETS easybind_sample_internal
