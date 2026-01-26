@@ -1,5 +1,7 @@
 #include <pymergetic/easybind/registry.hpp>
 
+#include <algorithm>
+
 namespace easybind {
 
 Registry& Registry::get() {
@@ -64,6 +66,33 @@ void Registry::apply_pending_for(const std::string& package, nanobind::module_& 
   for (const auto& entry : entries) {
     entry.cb(m);
   }
+}
+
+std::vector<std::string> Registry::packages() const {
+  std::vector<std::string> packages;
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    packages.reserve(bindings_.size());
+    for (const auto& entry : bindings_) {
+      if (entry.package == "global") {
+        continue;
+      }
+      packages.push_back(entry.package);
+    }
+  }
+
+  std::sort(packages.begin(), packages.end());
+  packages.erase(std::unique(packages.begin(), packages.end()), packages.end());
+  return packages;
+}
+
+std::vector<std::string> registered_packages() {
+  return Registry::get().packages();
+}
+
+void refresh_registered_packages(nanobind::module_& module, const char* package) {
+  Registry::get().apply_pending_for(package, module);
+  Registry::get().apply_pending(module);
 }
 
 }  // namespace easybind

@@ -12,6 +12,10 @@
 #define EASYBIND_BUILD_VERSION "0.0.0"
 #endif
 
+#ifndef EASYBIND_BOOTSTRAP_PACKAGE
+#define EASYBIND_BOOTSTRAP_PACKAGE "pymergetic.easybind"
+#endif
+
 namespace easybind {
 
 inline auto arg(const char* name) {
@@ -45,19 +49,6 @@ inline auto arg(const char* name) {
     }, "Apply newly registered bindings for this module.");                                       \
   }
 
-// Usage: EASYBIND_MODULE_PACKAGE() or EASYBIND_MODULE_PACKAGE(module_name)
-#define EASYBIND_DETAIL_MODULE_PACKAGE0()                                                         \
-  EASYBIND_MODULE(k_package, __cpp__, m)
-#define EASYBIND_DETAIL_MODULE_PACKAGE1(MODULE_NAME)                                               \
-  EASYBIND_MODULE(k_package, MODULE_NAME, m)
-#define EASYBIND_DETAIL_MODULE_PACKAGE_CHOOSER(...)                                                \
-  EASYBIND_DETAIL_MODULE_PACKAGE_CHOOSER_IMPL(                                                     \
-      _easybind_dummy, __VA_ARGS__ __VA_OPT__(,) EASYBIND_DETAIL_MODULE_PACKAGE1,                  \
-      EASYBIND_DETAIL_MODULE_PACKAGE0)
-#define EASYBIND_DETAIL_MODULE_PACKAGE_CHOOSER_IMPL(_1, _2, NAME, ...) NAME
-#define EASYBIND_MODULE_PACKAGE(...)                                                               \
-  EASYBIND_DETAIL_MODULE_PACKAGE_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
-
 // Usage: EASYBIND_SHARED_OBJECT() or EASYBIND_SHARED_OBJECT(module_name)
 #define EASYBIND_DETAIL_SHARED_OBJECT0()                                                           \
   EASYBIND_DETAIL_MODULE_ALL_IMPL(__cpp__, m)
@@ -75,9 +66,6 @@ inline auto arg(const char* name) {
     MODULE_VAR.doc() = "easybind registry bootstrap module";                                       \
     /* Populate __version__ from build metadata when available. */                                 \
     MODULE_VAR.attr("__version__") = EASYBIND_BUILD_VERSION;                                       \
+    ::easybind::Registry::get().apply_all_for(EASYBIND_BOOTSTRAP_PACKAGE, MODULE_VAR);             \
     ::easybind::Registry::get().apply_all(MODULE_VAR);                                             \
-    MODULE_VAR.def("refresh_bindings", [MODULE_VAR]() {                                           \
-      auto module = MODULE_VAR;                                                                   \
-      ::easybind::Registry::get().apply_pending(module);                                          \
-    }, "Apply newly registered bindings across all packages.");                                   \
   }

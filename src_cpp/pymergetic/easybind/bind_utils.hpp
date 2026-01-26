@@ -9,6 +9,9 @@
 #include <pymergetic/easybind/exceptions.hpp>
 #include <pymergetic/easybind/registry.hpp>
 
+// -----------------------------
+// Internal helpers (do not use)
+// -----------------------------
 #define EASYBIND_DETAIL_CONCAT_INNER(a, b) a##b
 #define EASYBIND_DETAIL_CONCAT(a, b) EASYBIND_DETAIL_CONCAT_INNER(a, b)
 
@@ -18,9 +21,19 @@
 
 #if EASYBIND_ENABLED
 
+// -----------------------------
+// Public binding API (use these)
+// -----------------------------
+
 // Usage: EASYBIND_REGISTER([](nanobind::module_& m) { ... });
 #define EASYBIND_REGISTER(LAMBDA) \
   static ::easybind::AutoRegister EASYBIND_DETAIL_CONCAT(_easybind_reg_, __COUNTER__)(LAMBDA)
+
+// Usage: EASYBIND_REGISTER_GLOBAL_NAMED("name", func, nb::arg("x") = 1, ...);
+#define EASYBIND_REGISTER_GLOBAL_NAMED(NAME, FUNC, ...)                                            \
+  EASYBIND_REGISTER([](nanobind::module_& m) {                                                     \
+    m.def(NAME, &FUNC __VA_OPT__(, ) __VA_ARGS__);                                                 \
+  })
 
 // Usage: EASYBIND_REGISTER_ATTR("name", value);
 #define EASYBIND_REGISTER_ATTR(NAME, VALUE)                                                       \
@@ -62,12 +75,6 @@
     ::easybind::describe::bind_struct<TYPE>(m, #TYPE);                                            \
   })
 
-// Usage: EASYBIND_REGISTER_CLASS_WITH(Type, [](auto& cls) { ... });
-#define EASYBIND_REGISTER_CLASS_WITH(TYPE, FN)                                                     \
-  EASYBIND_REGISTER_PACKAGE(k_package, [](nanobind::module_& m) {                                 \
-    ::easybind::describe::bind_struct<TYPE>(m, #TYPE, FN);                                         \
-  })
-
 // Usage: EASYBIND_REGISTER_CLASS_METHODS(Type, EASYBIND_DEF_METHOD(...), ...);
 #define EASYBIND_REGISTER_CLASS_METHODS(TYPE, ...)                                                 \
   EASYBIND_REGISTER_PACKAGE(k_package, [](nanobind::module_& m) {                                 \
@@ -82,21 +89,16 @@
     ::easybind::exceptions::bind<TYPE>(m, #TYPE);                                                  \
   })
 
-// Usage: EASYBIND_REGISTER_EXCEPTION_NAME(ExceptionType, "PyName");
-#define EASYBIND_REGISTER_EXCEPTION_NAME(TYPE, PY_NAME)                                            \
-  EASYBIND_REGISTER_PACKAGE_PRI(k_package, -20, [](nanobind::module_& m) {                         \
-    ::easybind::exceptions::bind<TYPE>(m, PY_NAME);                                                \
-  })
-
 // Usage: EASYBIND_IMPORT_EXCEPTION("pkg.module", "PyName");
 #define EASYBIND_IMPORT_EXCEPTION(MODULE_NAME, PY_NAME)                                            \
   EASYBIND_REGISTER_PACKAGE_PRI(k_package, -20, [](nanobind::module_& m) {                         \
     ::easybind::exceptions::export_alias(m, MODULE_NAME, PY_NAME);                                 \
   })
 
-// Compatibility alias for PY_* naming.
-#define PY_REGISTER EASYBIND_REGISTER
 
+// -----------------------------
+// Disabled bindings (no-ops)
+// -----------------------------
 #else
 
 #define EASYBIND_REGISTER(...)
@@ -106,11 +108,8 @@
 #define EASYBIND_REGISTER_FUNC(...)
 #define EASYBIND_REGISTER_ASYNC(...)
 #define EASYBIND_REGISTER_CLASS(...)
-#define EASYBIND_REGISTER_CLASS_WITH(...)
 #define EASYBIND_REGISTER_CLASS_METHODS(...)
 #define EASYBIND_REGISTER_EXCEPTION(...)
-#define EASYBIND_REGISTER_EXCEPTION_NAME(...)
 #define EASYBIND_IMPORT_EXCEPTION(...)
-#define PY_REGISTER(...)
 
 #endif

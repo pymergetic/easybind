@@ -111,6 +111,7 @@ target_include_directories(easybind PRIVATE
 
 easybind_add_extension(easybind_internal
     src_cpp/pymergetic/easybind/__cpp__.cpp
+    src_cpp/pymergetic/easybind/refresh.cpp
 )
 target_link_libraries(easybind_internal PRIVATE easybind::easybind)
 target_include_directories(easybind_internal PRIVATE ${magic_enum_SOURCE_DIR}/include)

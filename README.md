@@ -49,7 +49,7 @@ namespace nb = nanobind;
 
 struct PeerInfo;  // forward declare or include the header
 
-PY_REGISTER([](nanobind::module_& m) {
+EASYBIND_REGISTER([](nanobind::module_& m) {
     nb::class_<PeerInfo>(m, "PeerInfo")
         .def(nb::init<>())
         .def_rw("peer_id", &PeerInfo::peer_id)

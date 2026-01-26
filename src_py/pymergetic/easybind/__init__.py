@@ -17,4 +17,11 @@ def refresh_bindings() -> None:
     __cpp__.refresh_bindings()
 
 
-__all__ = ["__version__", "__version_cpp__", "refresh_bindings"]
+def registered_modules() -> list[str]:
+    """List registered module names in the native registry."""
+    if __cpp__ is None:
+        raise RuntimeError("easybind native module is not available")
+    return list(__cpp__.registered_modules())
+
+
+__all__ = ["__version__", "__version_cpp__", "refresh_bindings", "registered_modules"]
