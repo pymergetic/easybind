@@ -1,44 +1,30 @@
-import asyncio
+from __future__ import annotations
 
-from pymergetic.easybind.sample import __cpp__ as sample  # type: ignore[import-not-found]
+import pytest
 
-
-def test_widget_fields_and_enum() -> None:
-    widget = sample.Widget()
-    widget.name = "alpha"
-    widget.value = 3
-    widget.kind = sample.WidgetKind.Fancy
-
-    assert widget.name == "alpha"
-    assert widget.value == 3
-    assert widget.kind is sample.WidgetKind.Fancy
+import pymergetic.easybind.sample as sample
 
 
-def test_make_widget() -> None:
-    widget = sample.make_widget("beta", value=5, kind=sample.WidgetKind.Basic)
-    assert widget.name == "beta"
-    assert widget.value == 5
-    assert widget.kind is sample.WidgetKind.Basic
+def test_functions_and_constants() -> None:
+    assert sample.add(2, 3) == 5
+    assert sample.greet("pymergetic") == "hello pymergetic"
+    assert sample.DEFAULT_VALUE == 42
+    assert sample.LIB_NAME == "pymergetic.easybind.sample"
+    assert abs(sample.PI - 3.141592653589793) < 1e-12
 
 
-def test_async_methods_and_function() -> None:
-    async def run() -> None:
-        widget = sample.Widget()
-        widget.name = "gamma"
-        widget.value = 7
-        widget.kind = sample.WidgetKind.Basic
-
-        assert await widget.summary() == "gamma:7:basic"
-        assert await widget.bump(4) == 11
-        assert await sample.async_add(2, 9) == 11
-
-    asyncio.run(run())
+def test_widget() -> None:
+    widget = sample.Widget("alpha", value=3, kind=sample.WidgetKind.Fancy)
+    assert widget.summary() == "alpha:3"
+    assert widget.bump() == 4
+    assert widget.kind_name() == "fancy"
 
 
-def test_sample_error() -> None:
-    try:
-        sample.raise_error("boom")
-    except sample.SampleError as exc:
-        assert "boom" in str(exc)
-    else:
-        raise AssertionError("SampleError was not raised")
+def test_exceptions() -> None:
+    with pytest.raises(sample.SampleError):
+        sample.raise_sample_error("boom")
+
+    with pytest.raises(sample.WidgetError):
+        sample.raise_widget_error("widget boom")
+
+    assert issubclass(sample.WidgetError, sample.SampleError)

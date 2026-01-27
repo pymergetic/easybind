@@ -81,9 +81,9 @@ struct AsyncMethodWrapper;
 
 template <typename C, typename R, typename... Args, R (C::*Method)(Args...)>
 struct AsyncMethodWrapper<Method> {
-  static nanobind::object call(nanobind::object self_obj, Args... args) {
-    C& self = nanobind::cast<C&>(self_obj);
-    auto self_ptr = &self;
+  static nanobind::object call(nanobind::handle self_handle, Args... args) {
+    auto self_ptr = nanobind::inst_ptr<C>(self_handle);
+    nanobind::object self_obj = nanobind::borrow<nanobind::object>(self_handle);
     return call_asio_return([self_obj = std::move(self_obj), self_ptr](Args... inner) {
       return (self_ptr->*Method)(std::forward<Args>(inner)...);
     }, std::forward<Args>(args)...);
@@ -92,9 +92,9 @@ struct AsyncMethodWrapper<Method> {
 
 template <typename C, typename R, typename... Args, R (C::*Method)(Args...) const>
 struct AsyncMethodWrapper<Method> {
-  static nanobind::object call(nanobind::object self_obj, Args... args) {
-    const C& self = nanobind::cast<const C&>(self_obj);
-    auto self_ptr = &self;
+  static nanobind::object call(nanobind::handle self_handle, Args... args) {
+    auto self_ptr = nanobind::inst_ptr<C>(self_handle);
+    nanobind::object self_obj = nanobind::borrow<nanobind::object>(self_handle);
     return call_asio_return([self_obj = std::move(self_obj), self_ptr](Args... inner) {
       return (self_ptr->*Method)(std::forward<Args>(inner)...);
     }, std::forward<Args>(args)...);

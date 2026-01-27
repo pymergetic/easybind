@@ -3,19 +3,31 @@
 #include <stdexcept>
 #include <string>
 
-#include <boost/describe.hpp>
-
+#include <pymergetic/easybind/module/__init__.hpp>
 
 namespace pymergetic::easybind::sample {
 
 enum class WidgetKind {
-  Basic,
-  Fancy,
+  Basic = 0,
+  Fancy = 1,
+  Deluxe = 2,
 };
 
-class SampleError : public std::runtime_error {
-public:
+enum class WidgetKind_easy {
+  Basic = 0,
+  Fancy = 1,
+  Deluxe = 2,
+};
+
+extern module::ModuleNode* __module__;
+extern bool __module_initialized__;
+
+struct SampleError : std::runtime_error {
   using std::runtime_error::runtime_error;
+};
+
+struct WidgetError : SampleError {
+  using SampleError::SampleError;
 };
 
 struct Widget {
@@ -23,14 +35,24 @@ struct Widget {
   int value = 0;
   WidgetKind kind = WidgetKind::Basic;
 
-  std::string summary() const;
-  int bump(int delta = 1);
+  Widget();
+  Widget(std::string name_in, int value_in, WidgetKind kind_in);
 
-  BOOST_DESCRIBE_CLASS(Widget, (), (name, value, kind, summary, bump), (), ())
+  int bump(int delta = 1);
+  std::string summary() const;
+  std::string kind_name() const;
 };
 
-Widget make_widget(std::string name, int value = 0, WidgetKind kind = WidgetKind::Basic);
-int async_add(int a, int b);
-void raise_error(const std::string& message);
+
+
+extern const int kDefaultValue;
+extern const double kPi;
+extern const char* kLibName;
+
+int add(int left, int right);
+std::string greet(const std::string& name);
+Widget make_widget(const std::string& name, int value = 0, WidgetKind kind = WidgetKind::Basic);
+void raise_sample_error(const std::string& message);
+void raise_widget_error(const std::string& message);
 
 }  // namespace pymergetic::easybind::sample
