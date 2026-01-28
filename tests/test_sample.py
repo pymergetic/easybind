@@ -11,6 +11,11 @@ def test_functions_and_constants() -> None:
     assert sample.DEFAULT_VALUE == 42
     assert sample.LIB_NAME == "pymergetic.easybind.sample"
     assert abs(sample.PI - 3.141592653589793) < 1e-12
+    assert sample.add_easy(2, 3) == 5
+    assert sample.greet_easy("pymergetic") == "hello pymergetic"
+    assert sample.kDefaultValue_easy == 42
+    assert sample.kLibName_easy == "pymergetic.easybind.sample"
+    assert abs(sample.kPi_easy - 3.141592653589793) < 1e-12
 
 
 def test_widget() -> None:
@@ -18,6 +23,8 @@ def test_widget() -> None:
     assert widget.summary() == "alpha:3"
     assert widget.bump() == 4
     assert widget.kind_name() == "fancy"
+    easy_widget = sample.make_widget_easy("beta", value=2, kind=sample.WidgetKind.Basic)
+    assert easy_widget.summary() == "beta:2"
 
 
 def test_exceptions() -> None:

@@ -27,6 +27,12 @@ target_link_libraries(my_module PRIVATE easybind::easybind)
 - The pip-built package ships `__cpp__` so imports trigger binding registry.
 - A minimal sample module lives at `pymergetic.easybind.sample`.
 
+## Developer note: layout rules
+- `__init__.cpp` marks the Python boundary (NB_MODULE) for a package/module.
+- `__init__.hpp` declares binding-side globals (`__init__`, `__init_bind__`).
+- `__module__` (or `node.cpp/.hpp`, `hooks.cpp/.hpp`) is pure C++ core.
+- Directory layout mirrors namespaces and Python modules.
+
 ## Smallest possible example
 ### 1) Define a C++ type (normal code)
 ```cpp
