@@ -2,6 +2,8 @@
 
 #include <pymergetic/easybind/module/hooks_nb.hpp>
 
+#include <stdexcept>
+
 
 //
 // Extension-only helper implementation for nanobind ApplyHooks.
@@ -23,6 +25,16 @@ ApplyHooks make_nanobind_apply_hooks() {
         return module.def_submodule(name);
       },
   };
+}
+
+void apply_init(ModuleNode* init_node, nanobind::module_& m) {
+  ApplyHooks::set(make_nanobind_apply_hooks());
+
+  if (init_node) {
+    init_node->apply(m);
+  } else {
+    throw std::runtime_error("easybind module node not initialized");
+  }
 }
 
 

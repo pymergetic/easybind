@@ -1,7 +1,7 @@
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/string.h>
 
-#include <pymergetic/easybind/__init__.hpp>
+#include <pymergetic/easybind/bind.hpp>
 #include <pymergetic/easybind/sample/__init__.hpp>
 #include <pymergetic/easybind/sample/sample.hpp>
 
@@ -20,7 +20,8 @@ void __init_bind__(nanobind::module_& m) {
       .export_values();
 
   // Enums
-  easybind::enum_<WidgetKind_easy>(m, "WidgetKind_easy");
+  auto widget_kind_easy = easybind::enum_<WidgetKind_easy>(m, "WidgetKind_easy");
+  (void)widget_kind_easy;
 
   // Exceptions
   auto sample_error = nanobind::exception<SampleError_easy>(m, "SampleError_easy");
@@ -89,5 +90,5 @@ module::ModuleNode* __init__ =
 
 
 NB_MODULE(sample, m) {
-  pymergetic::easybind::apply_init(pymergetic::easybind::sample::__init__, m);
+  pymergetic::easybind::module::apply_init(pymergetic::easybind::sample::__init__, m);
 }
