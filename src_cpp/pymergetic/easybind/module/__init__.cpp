@@ -47,15 +47,6 @@ void __init_bind__(nanobind::module_& m) {
 
 ModuleNode* __init__ =
     ModuleNode::create("pymergetic.easybind.module", __init_bind__, false);
-  
-
-void set_package_path(nanobind::module_& m) {
-  nanobind::module_ os = nanobind::module_::import_("os");
-  nanobind::object dirname = os.attr("path").attr("dirname");
-  nanobind::list package_path;
-  package_path.append(dirname(m.attr("__file__")));
-  m.attr("__path__") = package_path;
-}
 
 
 }  // namespace pymergetic::easybind::module

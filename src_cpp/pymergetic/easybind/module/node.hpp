@@ -8,28 +8,21 @@
 #include <string_view>
 #include <vector>
 
-#include <nanobind/nanobind.h>
-#include <nanobind/stl/string.h>
-
-#include <pymergetic/easybind/module/hooks.hpp>
+#include <pymergetic/easybind/export.hpp>
 
 //
 // Core (pure C++) types for the module tree.
 //
 
 
-// Ensure symbols are exported from the shared core library.
-#if defined(_WIN32)
-#  define EASYBIND_CORE_API __declspec(dllexport)
-#else
-#  define EASYBIND_CORE_API __attribute__((visibility("default")))
-#endif
-
+namespace nanobind {
+class module_;
+}  // namespace nanobind
 
 namespace pymergetic::easybind::module {
 
 
-  class EASYBIND_CORE_API ModuleNode {
+class EASYBIND_API ModuleNode {
 public:
   using BindCallback = void (*)(nanobind::module_&);
 
@@ -75,6 +68,10 @@ private:
   std::map<std::string, std::unique_ptr<ModuleNode>> children_;
 
 };
+
+EASYBIND_API void set_package_path(nanobind::module_& m);
+
+EASYBIND_API void apply_init(ModuleNode* init_node, nanobind::module_& m);
 
 }  // namespace pymergetic::easybind::module
  

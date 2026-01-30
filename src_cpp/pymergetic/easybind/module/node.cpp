@@ -1,4 +1,8 @@
+#include <nanobind/nanobind.h>
+
 #include <pymergetic/easybind/module/node.hpp>
+
+#include <stdexcept>
 
 //
 // Core (pure C++) implementation for the module tree.
@@ -6,6 +10,42 @@
 
 namespace pymergetic::easybind::module {
 
+namespace {
+
+nanobind::module_ ensure_submodule(nanobind::module_& module, const char* name) {
+  PyObject* attr = PyObject_GetAttrString(module.ptr(), name);
+  if (attr) {
+    nanobind::module_ child = nanobind::borrow<nanobind::module_>(attr);
+    Py_DECREF(attr);
+    return child;
+  }
+  PyErr_Clear();
+
+  std::string full_name = name;
+  PyObject* module_name_obj = PyObject_GetAttrString(module.ptr(), "__name__");
+  if (module_name_obj) {
+    const char* parent_name = PyUnicode_AsUTF8(module_name_obj);
+    if (parent_name && parent_name[0] != '\0') {
+      full_name = std::string(parent_name) + "." + name;
+    }
+    Py_DECREF(module_name_obj);
+  } else {
+    PyErr_Clear();
+  }
+
+  PyObject* child_obj = PyModule_New(full_name.c_str());
+  if (!child_obj) {
+    throw std::runtime_error("failed to create submodule");
+  }
+  if (PyModule_AddObject(module.ptr(), name, child_obj) != 0) {
+    Py_DECREF(child_obj);
+    throw std::runtime_error("failed to attach submodule");
+  }
+
+  return nanobind::borrow<nanobind::module_>(child_obj);
+}
+
+}  // namespace
 
 ModuleNode::ModuleNode(std::string name, ModuleNode* parent, FlagState shared_object)
     : name_(std::move(name)), parent_(parent), shared_object_(shared_object) {}
@@ -153,11 +193,6 @@ void ModuleNode::apply(nanobind::module_& module) const {
     bind_callback_.store(nullptr, std::memory_order_release);
     bind_callback(module);
   }
-  const ApplyHooks* hooks = ApplyHooks::get();
-  if (!hooks || !hooks->has_child || !hooks->get_child || !hooks->def_child) {
-    applied_.store(true, std::memory_order_relaxed);
-    return;
-  }
   std::vector<const ModuleNode*> children_snapshot;
   {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -173,17 +208,67 @@ void ModuleNode::apply(nanobind::module_& module) const {
         continue;
       }
       const char* child_name = child->name().c_str();
-      if (hooks->has_child(module, child_name)) {
-        auto child_module = hooks->get_child(module, child_name);
-        child->apply(child_module);
-      } else {
-        auto child_module = hooks->def_child(module, child_name);
-        child->apply(child_module);
-      }
+      auto child_module = ensure_submodule(module, child_name);
+      child->apply(child_module);
     }
   }
 
   applied_.store(true, std::memory_order_relaxed);
+}
+
+void set_package_path(nanobind::module_& m) {
+  PyObject* os_mod = PyImport_ImportModule("os");
+  if (!os_mod) {
+    throw std::runtime_error("failed to import os module");
+  }
+
+  PyObject* path_obj = PyObject_GetAttrString(os_mod, "path");
+  Py_DECREF(os_mod);
+  if (!path_obj) {
+    throw std::runtime_error("failed to access os.path");
+  }
+
+  PyObject* dirname_obj = PyObject_GetAttrString(path_obj, "dirname");
+  if (!dirname_obj) {
+    Py_DECREF(path_obj);
+    throw std::runtime_error("failed to access os.path.dirname");
+  }
+
+  PyObject* file_obj = PyObject_GetAttrString(m.ptr(), "__file__");
+  if (!file_obj) {
+    Py_DECREF(dirname_obj);
+    Py_DECREF(path_obj);
+    throw std::runtime_error("failed to access module __file__");
+  }
+
+  PyObject* dir_path = PyObject_CallFunctionObjArgs(dirname_obj, file_obj, nullptr);
+  Py_DECREF(file_obj);
+  Py_DECREF(dirname_obj);
+  Py_DECREF(path_obj);
+  if (!dir_path) {
+    throw std::runtime_error("failed to compute package path");
+  }
+
+  PyObject* list_obj = PyList_New(1);
+  if (!list_obj) {
+    Py_DECREF(dir_path);
+    throw std::runtime_error("failed to create package path list");
+  }
+  PyList_SET_ITEM(list_obj, 0, dir_path);
+
+  if (PyObject_SetAttrString(m.ptr(), "__path__", list_obj) != 0) {
+    Py_DECREF(list_obj);
+    throw std::runtime_error("failed to set module __path__");
+  }
+  Py_DECREF(list_obj);
+}
+
+void apply_init(ModuleNode* init_node, nanobind::module_& m) {
+  if (init_node) {
+    init_node->apply(m);
+  } else {
+    throw std::runtime_error("easybind module node not initialized");
+  }
 }
 
 

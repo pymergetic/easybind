@@ -49,9 +49,16 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(reflect_cpp)
 
 # Some nanobind configurations don't automatically attach Python include dirs.
-foreach(_nb_tgt IN ITEMS nanobind nanobind-static nanobind_shared)
+foreach(_nb_tgt IN ITEMS nanobind nanobind_shared nanobind-static)
     if(TARGET ${_nb_tgt})
         target_link_libraries(${_nb_tgt} PRIVATE ${EASYBIND_PYTHON_TARGET})
+        set_target_properties(${_nb_tgt} PROPERTIES
+            CXX_VISIBILITY_PRESET default
+            VISIBILITY_INLINES_HIDDEN OFF
+        )
+        target_compile_options(${_nb_tgt} PRIVATE
+            $<$<CXX_COMPILER_ID:GNU,Clang>:-fvisibility=default>
+        )
     endif()
 endforeach()
 
@@ -72,7 +79,6 @@ function(easybind_add_extension target_name)
 endfunction()
 
 add_library(pymergetic_easybind__module__ SHARED
-    src_cpp/pymergetic/easybind/module/hooks.cpp
     src_cpp/pymergetic/easybind/module/node.cpp
 )
 set_target_properties(pymergetic_easybind__module__ PROPERTIES
@@ -83,18 +89,20 @@ set_target_properties(pymergetic_easybind__module__ PROPERTIES
 target_include_directories(pymergetic_easybind__module__ PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src_cpp
 )
+target_compile_definitions(pymergetic_easybind__module__ PRIVATE EASYBIND_BUILD)
 if(DEFINED nanobind_SOURCE_DIR)
     target_include_directories(pymergetic_easybind__module__ PRIVATE
         ${nanobind_SOURCE_DIR}/include
     )
 endif()
 target_link_libraries(pymergetic_easybind__module__ PRIVATE ${EASYBIND_PYTHON_TARGET})
-if(TARGET nanobind-static)
-    target_link_libraries(pymergetic_easybind__module__ PRIVATE nanobind-static)
+if(TARGET nanobind)
+    target_link_libraries(pymergetic_easybind__module__ PRIVATE nanobind)
 elseif(TARGET nanobind_shared)
     target_link_libraries(pymergetic_easybind__module__ PRIVATE nanobind_shared)
-elseif(TARGET nanobind)
-    target_link_libraries(pymergetic_easybind__module__ PRIVATE nanobind)
+elseif(TARGET nanobind-static)
+    target_link_libraries(pymergetic_easybind__module__ PRIVATE nanobind-static)
+    target_compile_definitions(pymergetic_easybind__module__ PRIVATE NB_STATIC)
 endif()
 if(APPLE)
     set_target_properties(pymergetic_easybind__module__ PROPERTIES
@@ -147,7 +155,6 @@ target_compile_options(pymergetic_easybind_sample__module__ PRIVATE
 
 easybind_add_extension(pymergetic_easybind_sample__init__
     src_cpp/pymergetic/easybind/sample/__init__.cpp
-    src_cpp/pymergetic/easybind/module/hooks_nb.cpp
 )
 target_link_libraries(pymergetic_easybind_sample__init__ PRIVATE
     pymergetic_easybind__module__
@@ -214,7 +221,6 @@ endif()
 easybind_add_extension(pymergetic_easybind__init__
     src_cpp/pymergetic/easybind/__init__.cpp
     src_cpp/pymergetic/easybind/module/__init__.cpp
-    src_cpp/pymergetic/easybind/module/hooks_nb.cpp
 )
 target_link_libraries(pymergetic_easybind__init__ PRIVATE pymergetic_easybind__module__)
 set_target_properties(pymergetic_easybind__init__ PROPERTIES

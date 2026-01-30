@@ -15,7 +15,7 @@ void __init_bind__(nanobind::module_& m) {
   m.doc() = "pymergetic.easybind module";
 
   // Mark as package so submodules can be imported.
-  pymergetic::easybind::module::set_package_path(m);
+  module::set_package_path(m);
 
 }
 
