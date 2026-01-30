@@ -9,6 +9,10 @@
 namespace pymergetic::easybind::sample {
 
 
+module::ModuleNode* __init__ =
+    module::ModuleNode::create("pymergetic.easybind.sample", __init_bind__, true);
+
+
 void __init_bind__(nanobind::module_& m) {
   m.doc() = "Nanobind sample module for easybind.";
 
@@ -81,9 +85,6 @@ void __init_bind__(nanobind::module_& m) {
       nanobind::arg("value") = 0,
       nanobind::arg("kind") = WidgetKind::Basic);
 }
-
-module::ModuleNode* __init__ =
-    module::ModuleNode::create("pymergetic.easybind.sample", __init_bind__, true);
 
 
 }  // namespace pymergetic::easybind::sample

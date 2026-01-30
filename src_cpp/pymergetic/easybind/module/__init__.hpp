@@ -10,8 +10,8 @@
 namespace pymergetic::easybind::module {
 
 
-void __init_bind__(nanobind::module_& m);
 extern ModuleNode* __init__;
+void __init_bind__(nanobind::module_& m);
 
 
 }  // namespace pymergetic::easybind::module

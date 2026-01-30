@@ -9,7 +9,10 @@
 
 namespace pymergetic::easybind {
 
-  
+
+module::ModuleNode* __init__ =
+  module::ModuleNode::create("pymergetic.easybind", __init_bind__, true);
+
 void __init_bind__(nanobind::module_& m) {
 
   m.doc() = "pymergetic.easybind module";
@@ -19,8 +22,7 @@ void __init_bind__(nanobind::module_& m) {
 
 }
 
-module::ModuleNode* __init__ =
-    module::ModuleNode::create("pymergetic.easybind", __init_bind__, true);
+
 
 
 }  // namespace pymergetic::easybind

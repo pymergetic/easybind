@@ -14,6 +14,9 @@
 namespace pymergetic::easybind::module {
 
 
+ModuleNode* __init__ =
+ModuleNode::create("pymergetic.easybind.module", __init_bind__, false);  
+
 void __init_bind__(nanobind::module_& m) {
   using ModuleNode = pymergetic::easybind::module::ModuleNode;
 
@@ -43,10 +46,6 @@ void __init_bind__(nanobind::module_& m) {
       nanobind::arg("shared_object") = false,
       nanobind::rv_policy::reference);
 }
-
-
-ModuleNode* __init__ =
-    ModuleNode::create("pymergetic.easybind.module", __init_bind__, false);
 
 
 }  // namespace pymergetic::easybind::module
