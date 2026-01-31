@@ -259,26 +259,32 @@ else()
 endif()
 
 # Build-time stub generation (package layout).
-nanobind_add_stub(pymergetic_easybind_stub
-    MODULE pymergetic.easybind
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/src_py/pymergetic/easybind/__init__.pyi
-    PYTHON_PATH $<TARGET_FILE_DIR:pymergetic_easybind__init__>
-    DEPENDS pymergetic_easybind__init__
-)
+function(easybind_add_stub_package stub_target_prefix module_target)
+    foreach(module_name IN LISTS ARGN)
+        string(REPLACE "." "/" module_path "${module_name}")
+        set(output_path "${CMAKE_CURRENT_SOURCE_DIR}/src_py/${module_path}/__init__.pyi")
+        get_filename_component(output_dir "${output_path}" DIRECTORY)
+        file(MAKE_DIRECTORY "${output_dir}")
 
-nanobind_add_stub(pymergetic_easybind_module_stub
-    MODULE pymergetic.easybind.module
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/src_py/pymergetic/easybind/module/__init__.pyi
-    PYTHON_PATH $<TARGET_FILE_DIR:pymergetic_easybind__init__>
-    DEPENDS pymergetic_easybind__init__
-)
+        string(REPLACE "." "_" module_target_suffix "${module_name}")
+        set(stub_target "${stub_target_prefix}_${module_target_suffix}_stub")
 
-nanobind_add_stub(pymergetic_easybind_sample_stub
-    MODULE pymergetic.easybind.sample
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/src_py/pymergetic/easybind/sample.pyi
-    PYTHON_PATH $<TARGET_FILE_DIR:pymergetic_easybind_sample__init__>
-    DEPENDS pymergetic_easybind_sample__init__
-)
+        nanobind_add_stub(${stub_target}
+            MODULE ${module_name}
+            OUTPUT ${output_path}
+            PYTHON_PATH $<TARGET_FILE_DIR:${module_target}>
+            DEPENDS ${module_target}
+        )
+    endforeach()
+endfunction()
+
+easybind_add_stub_package(pymergetic_easybind
+    pymergetic_easybind__init__
+    pymergetic.easybind
+    pymergetic.easybind.module)
+easybind_add_stub_package(pymergetic_easybind_sample
+    pymergetic_easybind_sample__init__
+    pymergetic.easybind.sample)
 
 if(NOT EASYBIND_SKIP_INSTALL)
     install(TARGETS pymergetic_easybind__module__
