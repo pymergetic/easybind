@@ -8,9 +8,9 @@ import pymergetic.easybind.sample as sample
 def test_functions_and_constants() -> None:
     assert sample.add(2, 3) == 5
     assert sample.greet("pymergetic") == "hello pymergetic"
-    assert sample.DEFAULT_VALUE == 42
-    assert sample.LIB_NAME == "pymergetic.easybind.sample"
-    assert abs(sample.PI - 3.141592653589793) < 1e-12
+    assert sample.kDefaultValue == 42
+    assert sample.kLibName == "pymergetic.easybind.sample"
+    assert abs(sample.kPi - 3.141592653589793) < 1e-12
     assert sample.add_easy(2, 3) == 5
     assert sample.greet_easy("pymergetic") == "hello pymergetic"
     assert sample.kDefaultValue_easy == 42
