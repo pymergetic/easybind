@@ -2,6 +2,9 @@
 
 #include <pymergetic/easybind/module/node.hpp>
 
+#include <format>
+#include <mutex>
+#include <shared_mutex>
 #include <stdexcept>
 
 //
@@ -26,7 +29,7 @@ nanobind::module_ ensure_submodule(nanobind::module_& module, const char* name) 
   if (module_name_obj) {
     const char* parent_name = PyUnicode_AsUTF8(module_name_obj);
     if (parent_name && parent_name[0] != '\0') {
-      full_name = std::string(parent_name) + "." + name;
+      full_name = std::format("{}.{}", parent_name, name);
     }
     Py_DECREF(module_name_obj);
   } else {
@@ -68,7 +71,7 @@ std::string ModuleNode::full_name() const {
   if (parent_ == nullptr || parent_->name_.empty()) {
     return name_;
   }
-  return parent_->full_name() + "." + name_;
+  return std::format("{}.{}", parent_->full_name(), name_);
 }
 
 ModuleNode* ModuleNode::parent() const {
@@ -115,7 +118,7 @@ void ModuleNode::mark_dirty() {
 }
 
 ModuleNode& ModuleNode::ensure_child(std::string name) {
-  std::lock_guard<std::mutex> lock(mutex_);
+  std::unique_lock<std::shared_mutex> lock(mutex_);
   auto it = children_.find(name);
   if (it != children_.end()) {
     return *it->second;
@@ -128,7 +131,7 @@ ModuleNode& ModuleNode::ensure_child(std::string name) {
 }
 
 ModuleNode* ModuleNode::find_child(std::string_view name) const {
-  std::lock_guard<std::mutex> lock(mutex_);
+  std::shared_lock<std::shared_mutex> lock(mutex_);
   auto it = children_.find(std::string(name));
   if (it == children_.end()) {
     return nullptr;
@@ -137,7 +140,7 @@ ModuleNode* ModuleNode::find_child(std::string_view name) const {
 }
 
 std::vector<const ModuleNode*> ModuleNode::children() const {
-  std::lock_guard<std::mutex> lock(mutex_);
+  std::shared_lock<std::shared_mutex> lock(mutex_);
   std::vector<const ModuleNode*> snapshot;
   snapshot.reserve(children_.size());
   for (const auto& [name, child] : children_) {
@@ -226,7 +229,7 @@ void ModuleNode::apply(nanobind::module_& module) const {
   }
   std::vector<const ModuleNode*> children_snapshot;
   {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::shared_lock<std::shared_mutex> lock(mutex_);
     children_snapshot.reserve(children_.size());
     for (const auto& [name, child] : children_) {
       children_snapshot.push_back(child.get());

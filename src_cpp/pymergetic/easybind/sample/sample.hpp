@@ -3,6 +3,14 @@
 #include <stdexcept>
 #include <string>
 
+#include <pymergetic/easybind/export.hpp>
+
+#if defined(EASYBIND_SAMPLE_BUILD)
+#  define EASYBIND_SAMPLE_API EASYBIND_EXPORT
+#else
+#  define EASYBIND_SAMPLE_API EASYBIND_IMPORT
+#endif
+
 
 namespace pymergetic::easybind::sample {
 
@@ -21,27 +29,27 @@ enum class WidgetKind_easy {
 };
 
 // Exceptions
-struct SampleError : std::runtime_error {
+struct EASYBIND_SAMPLE_API SampleError : std::runtime_error {
   using std::runtime_error::runtime_error;
 };
 
-struct WidgetError : SampleError {
+struct EASYBIND_SAMPLE_API WidgetError : SampleError {
   using SampleError::SampleError;
 };
 
-struct SampleError_easy : std::runtime_error {
+struct EASYBIND_SAMPLE_API SampleError_easy : std::runtime_error {
   using std::runtime_error::runtime_error;
 };
 
-struct WidgetError_easy : SampleError_easy {
+struct EASYBIND_SAMPLE_API WidgetError_easy : SampleError_easy {
   using SampleError_easy::SampleError_easy;
 };
 
-void raise_sample_error(const std::string& message);
-void raise_widget_error(const std::string& message);
+EASYBIND_SAMPLE_API void raise_sample_error(const std::string& message);
+EASYBIND_SAMPLE_API void raise_widget_error(const std::string& message);
 
 // Class
-struct Widget {
+struct EASYBIND_SAMPLE_API Widget {
   std::string name;
   int value = 0;
   WidgetKind kind = WidgetKind::Basic;
@@ -55,26 +63,26 @@ struct Widget {
 };
 
 // Constants
-extern const int kDefaultValue;
-extern const int kDefaultValue_easy;
+EASYBIND_SAMPLE_API extern const int kDefaultValue;
+EASYBIND_SAMPLE_API extern const int kDefaultValue_easy;
 
-extern const double kPi;
-extern const double kPi_easy;
+EASYBIND_SAMPLE_API extern const double kPi;
+EASYBIND_SAMPLE_API extern const double kPi_easy;
 
-extern const char* kLibName;
-extern const char* kLibName_easy;
+EASYBIND_SAMPLE_API extern const char* kLibName;
+EASYBIND_SAMPLE_API extern const char* kLibName_easy;
 
 // Functions
-int add(int left, int right);
-int add_easy(int left, int right);
+EASYBIND_SAMPLE_API int add(int left, int right);
+EASYBIND_SAMPLE_API int add_easy(int left, int right);
 
-std::string greet(const std::string& name);
-std::string greet_easy(const std::string& name);
+EASYBIND_SAMPLE_API std::string greet(const std::string& name);
+EASYBIND_SAMPLE_API std::string greet_easy(const std::string& name);
 
-Widget make_widget(const std::string& name,
+EASYBIND_SAMPLE_API Widget make_widget(const std::string& name,
     int value = 0,
     WidgetKind kind = WidgetKind::Basic);
-Widget make_widget_easy(const std::string& name,
+EASYBIND_SAMPLE_API Widget make_widget_easy(const std::string& name,
     int value = 0,
     WidgetKind kind = WidgetKind::Basic);
 }  // namespace pymergetic::easybind::sample

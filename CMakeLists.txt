@@ -116,11 +116,11 @@ else()
     )
 endif()
 set_target_properties(pymergetic_easybind__module__ PROPERTIES
-    CXX_VISIBILITY_PRESET default
-    VISIBILITY_INLINES_HIDDEN OFF
+    CXX_VISIBILITY_PRESET hidden
+    VISIBILITY_INLINES_HIDDEN ON
 )
 target_compile_options(pymergetic_easybind__module__ PRIVATE
-    $<$<CXX_COMPILER_ID:GNU,Clang>:-fvisibility=default>
+    $<$<CXX_COMPILER_ID:GNU,Clang>:-fvisibility=hidden>
 )
 
 add_library(pymergetic_easybind_sample__module__ SHARED
@@ -134,6 +134,7 @@ set_target_properties(pymergetic_easybind_sample__module__ PROPERTIES
 target_include_directories(pymergetic_easybind_sample__module__ PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src_cpp
 )
+target_compile_definitions(pymergetic_easybind_sample__module__ PRIVATE EASYBIND_SAMPLE_BUILD)
 if(APPLE)
     set_target_properties(pymergetic_easybind_sample__module__ PROPERTIES
         BUILD_RPATH "@loader_path"
@@ -146,11 +147,11 @@ else()
     )
 endif()
 set_target_properties(pymergetic_easybind_sample__module__ PROPERTIES
-    CXX_VISIBILITY_PRESET default
-    VISIBILITY_INLINES_HIDDEN OFF
+    CXX_VISIBILITY_PRESET hidden
+    VISIBILITY_INLINES_HIDDEN ON
 )
 target_compile_options(pymergetic_easybind_sample__module__ PRIVATE
-    $<$<CXX_COMPILER_ID:GNU,Clang>:-fvisibility=default>
+    $<$<CXX_COMPILER_ID:GNU,Clang>:-fvisibility=hidden>
 )
 
 easybind_add_extension(pymergetic_easybind_sample__init__

@@ -6,11 +6,11 @@
 namespace pymergetic::easybind::sample {
 
 
-void raise_sample_error(const std::string& message) {
+EASYBIND_SAMPLE_API void raise_sample_error(const std::string& message) {
   throw SampleError(message);
 }
 
-void raise_widget_error(const std::string& message) {
+EASYBIND_SAMPLE_API void raise_widget_error(const std::string& message) {
   throw WidgetError(message);
 }
 
@@ -40,34 +40,34 @@ std::string Widget::kind_name() const {
   return "unknown";
 }
 
-const int kDefaultValue = 42;
-const int kDefaultValue_easy = kDefaultValue;
-const double kPi = 3.141592653589793;
-const double kPi_easy = kPi;
-const char* kLibName = "pymergetic.easybind.sample";
-const char* kLibName_easy = kLibName;
+EASYBIND_SAMPLE_API const int kDefaultValue = 42;
+EASYBIND_SAMPLE_API const int kDefaultValue_easy = kDefaultValue;
+EASYBIND_SAMPLE_API const double kPi = 3.141592653589793;
+EASYBIND_SAMPLE_API const double kPi_easy = kPi;
+EASYBIND_SAMPLE_API const char* kLibName = "pymergetic.easybind.sample";
+EASYBIND_SAMPLE_API const char* kLibName_easy = kLibName;
 
-int add(int left, int right) {
+EASYBIND_SAMPLE_API int add(int left, int right) {
   return left + right;
 }
 
-int add_easy(int left, int right) {
+EASYBIND_SAMPLE_API int add_easy(int left, int right) {
   return add(left, right);
 }
 
-std::string greet(const std::string& name) {
+EASYBIND_SAMPLE_API std::string greet(const std::string& name) {
   return "hello " + name;
 }
 
-std::string greet_easy(const std::string& name) {
+EASYBIND_SAMPLE_API std::string greet_easy(const std::string& name) {
   return greet(name);
 }
 
-Widget make_widget(const std::string& name, int value, WidgetKind kind) {
+EASYBIND_SAMPLE_API Widget make_widget(const std::string& name, int value, WidgetKind kind) {
   return Widget{name, value, kind};
 }
 
-Widget make_widget_easy(const std::string& name, int value, WidgetKind kind) {
+EASYBIND_SAMPLE_API Widget make_widget_easy(const std::string& name, int value, WidgetKind kind) {
   return make_widget(name, value, kind);
 }
 

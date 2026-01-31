@@ -3,7 +3,7 @@
 #include <atomic>
 #include <map>
 #include <memory>
-#include <mutex>
+#include <shared_mutex>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -71,7 +71,7 @@ private:
   std::atomic<FlagState> package_;
   mutable std::atomic<BindCallback> bind_callback_{nullptr};
   mutable std::atomic<bool> applied_{false};
-  mutable std::mutex mutex_;
+  mutable std::shared_mutex mutex_;
   std::map<std::string, std::unique_ptr<ModuleNode>> children_;
 
 };
