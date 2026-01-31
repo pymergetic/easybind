@@ -203,7 +203,43 @@ ModuleNode* ModuleNode::create(const std::string& full_name,
   node->set_package(is_package);
   node->set_shared_object(shared_object);
   if (bind_callback) {
-    node->bind_callback_.store(bind_callback, std::memory_order_relaxed);
+    {
+      std::unique_lock<std::shared_mutex> lock(node->mutex_);
+      node->bind_callbacks_.push_back(bind_callback);
+    }
+    node->mark_dirty();
+  }
+
+  return node;
+}
+
+ModuleNode* ModuleNode::extend(const std::string& full_name,
+    BindCallback bind_callback) {
+  ModuleNode* node = &ModuleNode::root();
+  if (full_name.empty()) {
+    return node;
+  }
+
+  size_t start = 0;
+  while (start < full_name.size()) {
+    size_t dot = full_name.find('.', start);
+    if (dot == std::string_view::npos) {
+      dot = full_name.size();
+    }
+
+    std::string segment = full_name.substr(start, dot - start);
+    if (!segment.empty()) {
+      node = &node->ensure_child(std::string(segment));
+    }
+
+    start = dot + 1;
+  }
+
+  if (bind_callback) {
+    {
+      std::unique_lock<std::shared_mutex> lock(node->mutex_);
+      node->bind_callbacks_.push_back(bind_callback);
+    }
     node->mark_dirty();
   }
 
@@ -219,10 +255,15 @@ void ModuleNode::apply(nanobind::module_& module) const {
   if (applied_.load(std::memory_order_relaxed)) {
     return;
   }
-  auto bind_callback = bind_callback_.load(std::memory_order_acquire);
-  if (bind_callback) {
-    bind_callback_.store(nullptr, std::memory_order_release);
-    bind_callback(module);
+  std::vector<BindCallback> callbacks;
+  {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    callbacks.swap(bind_callbacks_);
+  }
+  for (auto callback : callbacks) {
+    if (callback) {
+      callback(module);
+    }
   }
   if (is_package()) {
     set_package_path(module);

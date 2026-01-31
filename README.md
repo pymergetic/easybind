@@ -3,11 +3,14 @@
 Simple self-registering helpers for distributed nanobind bindings.
 
 ## Python layer
-The Python package is intentionally thin. It currently exposes only
-`__version__` and exists to ship the CMake/headers as a standard distribution.
+The Python package is implemented as native extensions. It exposes:
+
+- `pymergetic.easybind` (core helpers and macros)
+- `pymergetic.easybind.module` (module tree API)
+- `pymergetic.easybind.sample` (demo bindings)
 
 ## Build-time SDK
-`easybind` provides the canonical CMake helper for hybrid extensions:
+`easybind` provides CMake helpers for hybrid extensions:
 
 - `easybind::build_interface` (INTERFACE): baseline C++20 + PIC + shared include paths
 - `easybind_add_extension(target ...)`: wraps `nanobind_add_module(... NB_SHARED ...)`
@@ -20,17 +23,16 @@ target_link_libraries(my_module PRIVATE easybind::easybind)
 ```
 
 ## Core idea
-- Each binding file registers a callback during static initialization.
-- The module entry point calls `easybind::Registry::get().apply_all(m)`.
-- No centralized `bind_*` list is required.
-- The registry lives in the `easybind` shared library so multiple extensions share it.
-- The pip-built package ships `__cpp__` so imports trigger binding registry.
+- Each namespace/module defines a `ModuleNode` and a bind callback.
+- The module entry point calls `apply_init` to run the callback and recurse.
+- Submodules are created on demand and registered in `sys.modules`.
+- Shared-object modules are marked so recursion stops at their boundary.
 - A minimal sample module lives at `pymergetic.easybind.sample`.
 
 ## Developer note: layout rules
 - `__init__.cpp` marks the Python boundary (NB_MODULE) for a package/module.
-- `__init__.hpp` declares binding-side globals (`__init__`, `__init_bind__`).
-- `__module__` (or `node.cpp/.hpp`, `hooks.cpp/.hpp`) is pure C++ core.
+- `node.cpp/.hpp` is the pure C++ module-tree core.
+- `ns_module.hpp` defines the `EASYBIND_NS_MODULE*` macros.
 - Directory layout mirrors namespaces and Python modules.
 
 ## Smallest possible example
@@ -46,64 +48,40 @@ struct PeerInfo {
 };
 ```
 
-### 2) Bind it in a separate file (self-register)
+### 2) Bind it in a separate file (module node)
 ```cpp
-#include <nanobind/nanobind.h>
-#include <pymergetic/easybind/bind_utils.hpp>
-
-namespace nb = nanobind;
+#include <pymergetic/easybind/bind.hpp>
 
 struct PeerInfo;  // forward declare or include the header
 
-EASYBIND_REGISTER([](nanobind::module_& m) {
-    nb::class_<PeerInfo>(m, "PeerInfo")
-        .def(nb::init<>())
+EASYBIND_NS_MODULE(pymergetic::my_pkg, m, false, {
+    nanobind::class_<PeerInfo>(m, "PeerInfo")
+        .def(nanobind::init<>())
         .def_rw("peer_id", &PeerInfo::peer_id)
         .def_rw("transport", &PeerInfo::transport);
 });
 ```
 
-### 3) Module entry point (runs all registered binds)
+### 3) Module entry point (shared-object boundary)
+Use this only for the package that has its own `.so` and NB_MODULE entry point.
+Do not pair it with `EASYBIND_NS_MODULE` for the same `pymergetic::my_pkg` name.
+If you need to add bindings from another file, use `EASYBIND_NS_MODULE_EXTEND`
+to extend the same module node instead.
 ```cpp
-#include <nanobind/nanobind.h>
-#include <pymergetic/easybind/registry.hpp>
+#include <pymergetic/easybind/bind.hpp>
 
-NB_MODULE(__cpp__, m) {
-    easybind::Registry::get().apply_all(m);
-}
+EASYBIND_NS_MODULE_SHARED_OBJECT(pymergetic::my_pkg, my_pkg, m, true, {
+    m.doc() = "pymergetic.my_pkg module";
+});
 ```
 
-## Exception bindings (cross-package friendly)
-Use these helpers so C++ exceptions get stable Python counterparts and can be
-re-exported across modules.
-
-Define/bind in the owning module:
+### 4) Extend from another file
 ```cpp
-#include <pymergetic/easybind/bind_utils.hpp>
+#include <pymergetic/easybind/bind.hpp>
 
-class SampleError : public std::runtime_error {
-public:
-    using std::runtime_error::runtime_error;
-};
-
-EASYBIND_REGISTER_EXCEPTION(SampleError);
-```
-
-Re-export from another module:
-```cpp
-#include <pymergetic/easybind/bind_utils.hpp>
-
-EASYBIND_IMPORT_EXCEPTION("pymergetic.easybind.sample.__cpp__", "SampleError");
-```
-
-## Linker note (important)
-If you compile your distributed bind files into a static library, the linker may
-discard them unless you force a whole-archive link. Example (Linux/GCC/Clang):
-```cmake
-add_library(my_bindings STATIC ${BIND_SOURCES})
-target_link_libraries(__cpp__ PRIVATE
-    "-Wl,--whole-archive" my_bindings "-Wl,--no-whole-archive"
-)
+EASYBIND_NS_MODULE_EXTEND(pymergetic::my_pkg, m, {
+    m.def("ping", [] { return "pong"; });
+});
 ```
 
 

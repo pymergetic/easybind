@@ -222,6 +222,7 @@ endif()
 easybind_add_extension(pymergetic_easybind__init__
     src_cpp/pymergetic/easybind/__init__.cpp
     src_cpp/pymergetic/easybind/module/__init__.cpp
+    src_cpp/pymergetic/easybind/module/node__init__.cpp
 )
 target_link_libraries(pymergetic_easybind__init__ PRIVATE pymergetic_easybind__module__)
 set_target_properties(pymergetic_easybind__init__ PROPERTIES
