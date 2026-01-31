@@ -258,6 +258,28 @@ else()
     )
 endif()
 
+# Build-time stub generation (package layout).
+nanobind_add_stub(pymergetic_easybind_stub
+    MODULE pymergetic.easybind
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/src_py/pymergetic/easybind/__init__.pyi
+    PYTHON_PATH $<TARGET_FILE_DIR:pymergetic_easybind__init__>
+    DEPENDS pymergetic_easybind__init__
+)
+
+nanobind_add_stub(pymergetic_easybind_module_stub
+    MODULE pymergetic.easybind.module
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/src_py/pymergetic/easybind/module/__init__.pyi
+    PYTHON_PATH $<TARGET_FILE_DIR:pymergetic_easybind__init__>
+    DEPENDS pymergetic_easybind__init__
+)
+
+nanobind_add_stub(pymergetic_easybind_sample_stub
+    MODULE pymergetic.easybind.sample
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/src_py/pymergetic/easybind/sample.pyi
+    PYTHON_PATH $<TARGET_FILE_DIR:pymergetic_easybind_sample__init__>
+    DEPENDS pymergetic_easybind_sample__init__
+)
+
 if(NOT EASYBIND_SKIP_INSTALL)
     install(TARGETS pymergetic_easybind__module__
         LIBRARY DESTINATION pymergetic/easybind

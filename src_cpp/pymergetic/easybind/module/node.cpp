@@ -37,7 +37,17 @@ nanobind::module_ ensure_submodule(nanobind::module_& module, const char* name) 
   if (!child_obj) {
     throw std::runtime_error("failed to create submodule");
   }
+  PyObject* modules = PyImport_GetModuleDict();
+  if (modules) {
+    if (PyDict_SetItemString(modules, full_name.c_str(), child_obj) != 0) {
+      Py_DECREF(child_obj);
+      throw std::runtime_error("failed to register submodule");
+    }
+  }
   if (PyModule_AddObject(module.ptr(), name, child_obj) != 0) {
+    if (modules) {
+      PyDict_DelItemString(modules, full_name.c_str());
+    }
     Py_DECREF(child_obj);
     throw std::runtime_error("failed to attach submodule");
   }
