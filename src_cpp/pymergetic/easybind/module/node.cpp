@@ -47,8 +47,8 @@ nanobind::module_ ensure_submodule(nanobind::module_& module, const char* name) 
 
 }  // namespace
 
-ModuleNode::ModuleNode(std::string name, ModuleNode* parent, FlagState shared_object)
-    : name_(std::move(name)), parent_(parent), shared_object_(shared_object) {}
+ModuleNode::ModuleNode(std::string name, ModuleNode* parent, FlagState shared_object, FlagState is_package) : 
+  name_(std::move(name)), parent_(parent), shared_object_(shared_object), package_(is_package) {}
 
 const std::string& ModuleNode::name() const {
   return name_;
@@ -79,6 +79,22 @@ void ModuleNode::set_shared_object(bool shared_object) {
 
 void ModuleNode::set_shared_object_state(FlagState state) {
   shared_object_.store(state, std::memory_order_relaxed);
+}
+
+ModuleNode::FlagState ModuleNode::package_state() const {
+  return package_.load(std::memory_order_relaxed);
+}
+
+bool ModuleNode::is_package() const {
+  return package_state() == FlagState::True;
+}
+
+void ModuleNode::set_package(bool is_package) {
+  set_package_state(is_package ? FlagState::True : FlagState::False);
+}
+
+void ModuleNode::set_package_state(FlagState state) {
+  package_.store(state, std::memory_order_relaxed);
 }
 
 void ModuleNode::mark_dirty() {
@@ -149,6 +165,7 @@ ModuleNode* ModuleNode::from(const std::string& full_name) {
 
 ModuleNode* ModuleNode::create(const std::string& full_name,
     BindCallback bind_callback,
+    bool is_package,
     bool shared_object) {
   ModuleNode* node = &ModuleNode::root();
   if (full_name.empty()) {
@@ -170,6 +187,7 @@ ModuleNode* ModuleNode::create(const std::string& full_name,
     start = dot + 1;
   }
 
+  node->set_package(is_package);
   node->set_shared_object(shared_object);
   if (bind_callback) {
     node->bind_callback_.store(bind_callback, std::memory_order_relaxed);
@@ -180,7 +198,7 @@ ModuleNode* ModuleNode::create(const std::string& full_name,
 }
 
 ModuleNode& ModuleNode::root() {
-  static ModuleNode root_node{"", nullptr, FlagState::False};
+  static ModuleNode root_node{"", nullptr, FlagState::False, FlagState::False};
   return root_node;
 }
 
@@ -192,6 +210,9 @@ void ModuleNode::apply(nanobind::module_& module) const {
   if (bind_callback) {
     bind_callback_.store(nullptr, std::memory_order_release);
     bind_callback(module);
+  }
+  if (is_package()) {
+    set_package_path(module);
   }
   std::vector<const ModuleNode*> children_snapshot;
   {

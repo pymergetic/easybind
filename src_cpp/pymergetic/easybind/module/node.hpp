@@ -39,6 +39,10 @@ public:
   bool is_shared_object() const;
   void set_shared_object(bool shared_object);
   void set_shared_object_state(FlagState state);
+  FlagState package_state() const;
+  bool is_package() const;
+  void set_package(bool is_package);
+  void set_package_state(FlagState state);
 
   void apply(nanobind::module_& module) const;
 
@@ -50,18 +54,21 @@ public:
   static ModuleNode* from(const std::string& full_name);
   static ModuleNode* create(const std::string& full_name,
       BindCallback bind_callback = nullptr,
+      bool is_package = false,
       bool shared_object = false);
 
 private:
   explicit ModuleNode(std::string name,
       ModuleNode* parent = nullptr,
-      FlagState shared_object = FlagState::Unknown);
+      FlagState shared_object = FlagState::Unknown,
+      FlagState is_package = FlagState::Unknown);
 
   void mark_dirty();
 
   std::string name_;
   ModuleNode* parent_;
   std::atomic<FlagState> shared_object_;
+  std::atomic<FlagState> package_;
   mutable std::atomic<BindCallback> bind_callback_{nullptr};
   mutable std::atomic<bool> applied_{false};
   mutable std::mutex mutex_;

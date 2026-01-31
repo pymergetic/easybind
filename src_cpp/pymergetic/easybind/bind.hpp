@@ -3,7 +3,15 @@
 #include <string>
 
 #include <magic_enum.hpp>
+
 #include <nanobind/nanobind.h>
+#include <nanobind/stl/shared_ptr.h>
+#include <nanobind/stl/string.h>
+#include <nanobind/stl/vector.h>
+#include <nanobind/stl/pair.h>
+
+// Convenience macros for binding.
+#include <pymergetic/easybind/module/ns_module.hpp>
 
 namespace pymergetic::easybind {
 

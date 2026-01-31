@@ -1,19 +1,9 @@
-#include <nanobind/nanobind.h>
-#include <nanobind/stl/string.h>
-
 #include <pymergetic/easybind/bind.hpp>
-#include <pymergetic/easybind/sample/__init__.hpp>
+
 #include <pymergetic/easybind/sample/sample.hpp>
 
 
-namespace pymergetic::easybind::sample {
-
-
-module::ModuleNode* __init__ =
-    module::ModuleNode::create("pymergetic.easybind.sample", __init_bind__, true);
-
-
-void __init_bind__(nanobind::module_& m) {
+EASYBIND_NS_MODULE_SHARED_OBJECT(pymergetic::easybind::sample, sample, true, {
   m.doc() = "Nanobind sample module for easybind.";
 
   // Enums needed for default arguments.
@@ -84,12 +74,4 @@ void __init_bind__(nanobind::module_& m) {
       nanobind::arg("name"),
       nanobind::arg("value") = 0,
       nanobind::arg("kind") = WidgetKind::Basic);
-}
-
-
-}  // namespace pymergetic::easybind::sample
-
-
-NB_MODULE(sample, m) {
-  pymergetic::easybind::module::apply_init(pymergetic::easybind::sample::__init__, m);
-}
+});
