@@ -6,7 +6,7 @@
 //
 
 
-EASYBIND_NS_MODULE(pymergetic::easybind::module, false, {
+EASYBIND_NS_MODULE(pymergetic::easybind::module, m, false, {
   using ModuleNode = pymergetic::easybind::module::ModuleNode;
 
   nanobind::enum_<ModuleNode::FlagState>(m, "FlagState")

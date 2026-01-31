@@ -41,30 +41,30 @@ std::string Widget::kind_name() const {
 }
 
 const int kDefaultValue = 42;
-const double kPi = 3.141592653589793;
-const char* kLibName = "pymergetic.easybind.sample";
 const int kDefaultValue_easy = kDefaultValue;
+const double kPi = 3.141592653589793;
 const double kPi_easy = kPi;
+const char* kLibName = "pymergetic.easybind.sample";
 const char* kLibName_easy = kLibName;
 
 int add(int left, int right) {
   return left + right;
 }
 
-std::string greet(const std::string& name) {
-  return "hello " + name;
-}
-
-Widget make_widget(const std::string& name, int value, WidgetKind kind) {
-  return Widget{name, value, kind};
-}
-
 int add_easy(int left, int right) {
   return add(left, right);
 }
 
+std::string greet(const std::string& name) {
+  return "hello " + name;
+}
+
 std::string greet_easy(const std::string& name) {
   return greet(name);
+}
+
+Widget make_widget(const std::string& name, int value, WidgetKind kind) {
+  return Widget{name, value, kind};
 }
 
 Widget make_widget_easy(const std::string& name, int value, WidgetKind kind) {

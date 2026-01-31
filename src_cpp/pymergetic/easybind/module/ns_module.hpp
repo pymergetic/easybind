@@ -36,10 +36,10 @@ inline std::string namespace_to_full_name(const char* ns) {
 // EASYBIND_NS_MODULE_SHARED_OBJECT(ns::path, module_name, {
 //   // bind code...
 // });
-#define EASYBIND_NS_MODULE(NS, IS_PACKAGE, BODY)                               \
+#define EASYBIND_NS_MODULE(NS, MODULE_VAR, IS_PACKAGE, BODY)                    \
   namespace NS {                                                               \
   namespace {                                                                  \
-  void __init_bind__(nanobind::module_& m) BODY                                \
+  void __init_bind__(nanobind::module_& MODULE_VAR) BODY                        \
   }                                                                            \
   ::pymergetic::easybind::module::ModuleNode* __init__ =                        \
       ::pymergetic::easybind::module::ModuleNode::create(                       \
@@ -49,10 +49,10 @@ inline std::string namespace_to_full_name(const char* ns) {
           false);                                                              \
   }
 
-#define EASYBIND_NS_MODULE_SHARED_OBJECT(NS, MODULE, IS_PACKAGE, BODY)          \
+#define EASYBIND_NS_MODULE_SHARED_OBJECT(MODULE, MODULE_VAR, NS, IS_PACKAGE, BODY) \
   namespace NS {                                                               \
   namespace {                                                                  \
-  void __init_bind__(nanobind::module_& m) BODY                                \
+  void __init_bind__(nanobind::module_& MODULE_VAR) BODY                        \
   }                                                                            \
   ::pymergetic::easybind::module::ModuleNode* __init__ =                        \
       ::pymergetic::easybind::module::ModuleNode::create(                       \
@@ -61,6 +61,6 @@ inline std::string namespace_to_full_name(const char* ns) {
           IS_PACKAGE,                                                          \
           true);                                                               \
   }                                                                            \
-  NB_MODULE(MODULE, m) {                                                       \
-    ::pymergetic::easybind::module::apply_init(::NS::__init__, m);              \
+  NB_MODULE(MODULE, MODULE_VAR) {                                              \
+    ::pymergetic::easybind::module::apply_init(::NS::__init__, MODULE_VAR);     \
   }

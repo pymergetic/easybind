@@ -7,12 +7,14 @@
 namespace pymergetic::easybind::sample {
 
 
-//
-// Classic nanobind bindings
-//  
-
 // Enums
 enum class WidgetKind {
+  Basic = 0,
+  Fancy = 1,
+  Deluxe = 2,
+};
+
+enum class WidgetKind_easy {
   Basic = 0,
   Fancy = 1,
   Deluxe = 2,
@@ -25,6 +27,14 @@ struct SampleError : std::runtime_error {
 
 struct WidgetError : SampleError {
   using SampleError::SampleError;
+};
+
+struct SampleError_easy : std::runtime_error {
+  using std::runtime_error::runtime_error;
+};
+
+struct WidgetError_easy : SampleError_easy {
+  using SampleError_easy::SampleError_easy;
 };
 
 void raise_sample_error(const std::string& message);
@@ -46,50 +56,25 @@ struct Widget {
 
 // Constants
 extern const int kDefaultValue;
-extern const double kPi;
-extern const char* kLibName;
-
-// Functions
-int add(int left, int right);
-std::string greet(const std::string& name);
-Widget make_widget(const std::string& name,
-    int value = 0,
-    WidgetKind kind = WidgetKind::Basic);
-
-
-//
-// Easybind bindings
-//  
-
-// Enums
-enum class WidgetKind_easy {
-  Basic = 0,
-  Fancy = 1,
-  Deluxe = 2,
-};
-
-// Exceptions
-struct SampleError_easy : std::runtime_error {
-  using std::runtime_error::runtime_error;
-};
-
-struct WidgetError_easy : SampleError_easy {
-  using SampleError_easy::SampleError_easy;
-};
-
-// Class
-
-// Constants
 extern const int kDefaultValue_easy;
+
+extern const double kPi;
 extern const double kPi_easy;
+
+extern const char* kLibName;
 extern const char* kLibName_easy;
 
 // Functions
+int add(int left, int right);
 int add_easy(int left, int right);
+
+std::string greet(const std::string& name);
 std::string greet_easy(const std::string& name);
+
+Widget make_widget(const std::string& name,
+    int value = 0,
+    WidgetKind kind = WidgetKind::Basic);
 Widget make_widget_easy(const std::string& name,
     int value = 0,
     WidgetKind kind = WidgetKind::Basic);
-
-    
 }  // namespace pymergetic::easybind::sample
