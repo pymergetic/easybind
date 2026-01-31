@@ -205,7 +205,7 @@ ModuleNode* ModuleNode::create(const std::string& full_name,
   if (bind_callback) {
     {
       std::unique_lock<std::shared_mutex> lock(node->mutex_);
-      node->bind_callbacks_.push_back(bind_callback);
+      node->bind_callbacks_.push_back(ModuleNode::BindCallbackEntry{bind_callback, false});
     }
     node->mark_dirty();
   }
@@ -238,7 +238,7 @@ ModuleNode* ModuleNode::extend(const std::string& full_name,
   if (bind_callback) {
     {
       std::unique_lock<std::shared_mutex> lock(node->mutex_);
-      node->bind_callbacks_.push_back(bind_callback);
+      node->bind_callbacks_.push_back(ModuleNode::BindCallbackEntry{bind_callback, false});
     }
     node->mark_dirty();
   }
@@ -258,12 +258,15 @@ void ModuleNode::apply(nanobind::module_& module) const {
   std::vector<BindCallback> callbacks;
   {
     std::unique_lock<std::shared_mutex> lock(mutex_);
-    callbacks.swap(bind_callbacks_);
+    for (auto& entry : bind_callbacks_) {
+      if (!entry.applied && entry.callback) {
+        callbacks.push_back(entry.callback);
+        entry.applied = true;
+      }
+    }
   }
   for (auto callback : callbacks) {
-    if (callback) {
-      callback(module);
-    }
+    callback(module);
   }
   if (is_package()) {
     set_package_path(module);

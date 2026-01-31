@@ -60,6 +60,11 @@ public:
       BindCallback bind_callback);
 
 private:
+  struct BindCallbackEntry {
+    BindCallback callback = nullptr;
+    bool applied = false;
+  };
+
   explicit ModuleNode(std::string name,
       ModuleNode* parent = nullptr,
       FlagState shared_object = FlagState::Unknown,
@@ -71,7 +76,7 @@ private:
   ModuleNode* parent_;
   std::atomic<FlagState> shared_object_;
   std::atomic<FlagState> package_;
-  mutable std::vector<BindCallback> bind_callbacks_;
+  mutable std::vector<BindCallbackEntry> bind_callbacks_;
   mutable std::atomic<bool> applied_{false};
   mutable std::shared_mutex mutex_;
   std::map<std::string, std::unique_ptr<ModuleNode>> children_;
