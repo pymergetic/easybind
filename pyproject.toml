@@ -39,6 +39,8 @@ extraPaths = ["src"]
 
 [project.scripts]
 easybind-pin-pyproject = "easybind.devtools.pin_pyproject:main"
+easybind-release-tag = "easybind.devtools.release_tag:main"
+easybind-wait-pypi = "easybind.devtools.wait_pypi:main"
 
 [project.optional-dependencies]
 dev = [

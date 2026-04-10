@@ -72,6 +72,13 @@ easybind-pin-pyproject --distribution cppdantic
 easybind-pin-pyproject --pyproject /path/to/pyproject.toml
 ```
 
+**Other devtools CLIs** (after **`pip install`** / **`uv pip install -e .`**, or run **`scripts/…`** shims from a git checkout):
+
+```bash
+easybind-release-tag --dry-run    # next v* tag + git push (easybind repo)
+easybind-wait-pypi                # poll PyPI until pins resolve (downstream CI)
+```
+
 **Library:**
 
 ```python
@@ -91,7 +98,7 @@ bump_compatible_pins_in_file("pyproject.toml", "cppdantic", ver)
 
 Shorthands **`bump_easybind_compatible_pins`** / **`bump_easybind_compatible_pins_in_file`** remain for **`distribution=\"easybind\"`** only.
 
-**CI (downstream):** **`scripts/wait_pypi_release.py`** polls PyPI until the version implied by your **`{distribution}~=…`** pins exists (no **`pip install easybind`** required if you set **`PYTHONPATH`** to this repo’s **`src`**). See **`single_compatible_pin_version`** in **`easybind.devtools`**.
+**CI (downstream):** **`easybind-wait-pypi`** (or **`scripts/wait_pypi_release.py`**) wraps **`wait_pypi_for_compatible_pin`** in **`easybind.devtools`** — poll PyPI until the pinned version exists. From a checkout without install, set **`PYTHONPATH`** to this repo’s **`src`** or use the shim script.
 
 ## Core idea
 - Each namespace/module defines a `ModuleNode` and a bind callback.

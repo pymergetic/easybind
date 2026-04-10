@@ -10,6 +10,7 @@ from easybind.devtools.pin_pyproject import (
     installed_distribution_version,
     pypi_release_exists,
     single_compatible_pin_version,
+    wait_pypi_for_compatible_pin,
 )
 from easybind.devtools.release_helpers import (
     ensure_clean_worktree,
@@ -32,4 +33,5 @@ __all__ = [
     "pypi_release_exists",
     "single_compatible_pin_version",
     "tag_push_commands",
+    "wait_pypi_for_compatible_pin",
 ]

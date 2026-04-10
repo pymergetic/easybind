@@ -6,8 +6,10 @@ import argparse
 import json
 import re
 import sys
-import urllib.request
+import time
 from pathlib import Path
+from urllib.error import HTTPError
+from urllib.request import urlopen
 
 # PEP 440 version suitable for ``~=`` RHS in typical pyproject pins (numeric release).
 _VERSION_RE = re.compile(r"^[0-9]+(?:\.[0-9]+)*$")
@@ -28,20 +30,18 @@ def _pin_pattern(distribution: str) -> re.Pattern[str]:
 def fetch_pypi_version(package: str = "easybind", *, timeout_s: float = 30.0) -> str:
     """Return ``info.version`` from ``https://pypi.org/pypi/{package}/json``."""
     url = f"https://pypi.org/pypi/{package}/json"
-    with urllib.request.urlopen(url, timeout=timeout_s) as r:
+    with urlopen(url, timeout=timeout_s) as r:
         data = json.load(r)
     return str(data["info"]["version"])
 
 
 def pypi_release_exists(package: str, version: str, *, timeout_s: float = 15.0) -> bool:
     """Return True if ``https://pypi.org/pypi/{package}/{version}/json`` exists (release uploaded)."""
-    import urllib.error
-
     url = f"https://pypi.org/pypi/{package}/{version}/json"
     try:
-        with urllib.request.urlopen(url, timeout=timeout_s) as r:
+        with urlopen(url, timeout=timeout_s) as r:
             return getattr(r, "status", 200) == 200
-    except urllib.error.HTTPError as e:
+    except HTTPError as e:
         if e.code == 404:
             return False
         raise
@@ -71,6 +71,47 @@ def single_compatible_pin_version(
             f"{distribution}~= pins disagree: {sorted(uniq)!r}; fix pyproject.toml first"
         )
     return vers[0]
+
+
+def wait_pypi_for_compatible_pin(
+    pyproject_toml: str,
+    distribution: str,
+    *,
+    timeout_s: float = 1800.0,
+    interval_s: float = 30.0,
+    verbose: bool = False,
+) -> tuple[str, int]:
+    """Poll PyPI until ``pypi_release_exists(distribution, version)`` for the pin.
+
+    Uses ``single_compatible_pin_version`` on *pyproject_toml*. Returns
+    ``(resolved_version, attempt_count)``. Raises ``TimeoutError`` if the release
+    never appears within *timeout_s*. With *verbose*, log progress to stdout.
+    """
+    version = single_compatible_pin_version(pyproject_toml, distribution)
+    if verbose:
+        print(
+            f"waiting for {distribution}=={version} on PyPI "
+            f"(timeout {timeout_s:.0f}s, interval {interval_s:.0f}s)...",
+            flush=True,
+        )
+    deadline = time.monotonic() + timeout_s
+    attempt = 0
+    while True:
+        attempt += 1
+        if pypi_release_exists(distribution, version):
+            return version, attempt
+        if time.monotonic() >= deadline:
+            raise TimeoutError(
+                f"timed out waiting for {distribution}=={version} on PyPI "
+                f"after {timeout_s}s ({attempt} attempts)"
+            )
+        if verbose:
+            remaining = int(max(0, deadline - time.monotonic()))
+            print(
+                f"attempt {attempt}: not yet (retry in {interval_s:.0f}s, ~{remaining}s left)...",
+                flush=True,
+            )
+        time.sleep(interval_s)
 
 
 def installed_distribution_version(package: str = "easybind") -> str:
