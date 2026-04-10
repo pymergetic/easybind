@@ -18,8 +18,19 @@ _VERSION_RE = re.compile(r"^[0-9]+(?:\.[0-9]+)*$")
 # Release tags: ``vMAJOR.MINOR.PATCH`` (GitHub / git tag style).
 _V_SEMVER_TAG = re.compile(r"^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 
+
+def _semver_tuple(version: str) -> tuple[int, ...]:
+    """Numeric tuple for comparing ``X.Y.Z`` style pins."""
+    return tuple(int(p) for p in version.split("."))
+
 # Reject pathological / mistaken distribution strings (full re.escape covers the rest).
 _DIST_OK = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9._-]*$")
+
+# ``https://github.com/OWNER/REPO`` (and ``…/tree/…``, ``.git``, …).
+_GITHUB_OWNER_REPO = re.compile(
+    r"https?://github\.com/([^/]+)/([^/#?]+)",
+    re.IGNORECASE,
+)
 
 
 def _pin_pattern(distribution: str) -> re.Pattern[str]:
@@ -31,12 +42,56 @@ def _pin_pattern(distribution: str) -> re.Pattern[str]:
     return re.compile(rf"({re.escape(distribution)}~=)([0-9]+(?:\.[0-9]+)*)")
 
 
+def fetch_pypi_project_json(distribution: str, *, timeout_s: float = 30.0) -> dict:
+    """Return the JSON object from ``https://pypi.org/pypi/{distribution}/json``."""
+    url = f"https://pypi.org/pypi/{distribution}/json"
+    try:
+        with urlopen(url, timeout=timeout_s) as r:
+            return json.load(r)
+    except HTTPError as e:
+        if e.code == 404:
+            raise ValueError(f"no PyPI project named {distribution!r}") from e
+        raise
+
+
 def fetch_pypi_version(package: str = "easybind", *, timeout_s: float = 30.0) -> str:
     """Return ``info.version`` from ``https://pypi.org/pypi/{package}/json``."""
-    url = f"https://pypi.org/pypi/{package}/json"
-    with urlopen(url, timeout=timeout_s) as r:
-        data = json.load(r)
+    data = fetch_pypi_project_json(package, timeout_s=timeout_s)
     return str(data["info"]["version"])
+
+
+def github_owner_repo_from_pypi_distribution(distribution: str, *, timeout_s: float = 30.0) -> str:
+    """Return ``OWNER/REPO`` by scanning PyPI ``home_page`` and ``project_urls`` for ``github.com``.
+
+    Works for any PyPI name whose metadata includes a ``github.com/OWNER/REPO`` link.
+    If nothing matches, raises ``ValueError`` — then pass ``--from-github OWNER/REPO`` explicitly.
+    """
+    data = fetch_pypi_project_json(distribution, timeout_s=timeout_s)
+    info = data.get("info") or {}
+    urls: list[str] = []
+    pu = info.get("project_urls")
+    if isinstance(pu, dict):
+        for key in ("Source", "Repository", "Homepage", "Code"):
+            v = pu.get(key)
+            if isinstance(v, str) and v.strip():
+                urls.append(v.strip())
+        for v in pu.values():
+            if isinstance(v, str) and v.strip() and v.strip() not in urls:
+                urls.append(v.strip())
+    hp = info.get("home_page")
+    if isinstance(hp, str) and hp.strip():
+        urls.append(hp.strip())
+
+    for u in urls:
+        m = _GITHUB_OWNER_REPO.search(u)
+        if m:
+            repo = m.group(2).removesuffix(".git")
+            return f"{m.group(1)}/{repo}"
+
+    raise ValueError(
+        f"no github.com URL in PyPI metadata for {distribution!r}; "
+        "set project URLs on PyPI or pass --from-github OWNER/REPO"
+    )
 
 
 def pypi_release_exists(package: str, version: str, *, timeout_s: float = 15.0) -> bool:
@@ -125,6 +180,19 @@ def installed_distribution_version(package: str = "easybind") -> str:
     return version(package)
 
 
+def compatible_release_pin_from_installed_version(pep440: str) -> str:
+    """Map an installed PEP 440 version (e.g. setuptools-scm ``0.2.7.post1.dev0``) to ``MAJOR.MINOR.PATCH`` for ``~=`` pins."""
+    from packaging.version import Version
+
+    v = Version(pep440)
+    rel = list(v.release)
+    if not rel:
+        raise ValueError(f"no release segment in {pep440!r}")
+    while len(rel) < 3:
+        rel.append(0)
+    return f"{rel[0]}.{rel[1]}.{rel[2]}"
+
+
 def _github_request_json(url: str, *, token: str | None, timeout_s: float) -> object:
     req = Request(url, headers={"Accept": "application/vnd.github+json"})
     if token:
@@ -142,7 +210,7 @@ def latest_release_version_from_github(
     """Return the highest ``vMAJOR.MINOR.PATCH`` tag on GitHub as ``X.Y.Z`` (no local git clone).
 
     Uses ``GET /repos/{owner}/{repo}/tags`` (paginated). Works when the tag exists on GitHub but
-    PyPI has not published the wheel yet. *owner_repo* is ``OWNER/REPO`` (e.g. ``pymergetic/easybind``).
+    PyPI has not published the wheel yet. *owner_repo* is ``OWNER/REPO``.
 
     Set ``GITHUB_TOKEN`` or ``GH_TOKEN`` (or pass *token*) for private repos or higher rate limits.
     """
@@ -256,9 +324,10 @@ def main(argv: list[str] | None = None) -> int:
         description=(
             "Set every {distribution}~= pin in pyproject.toml "
             "(default distribution: easybind). "
-            "Default version is latest on PyPI (can lag CI). "
-            "Use --from-github OWNER/REPO for the latest vX.Y.Z tag on GitHub (no local git); "
-            "use --version when you know the number; --installed uses the env's installed wheel."
+            "Default version is latest on PyPI (can lag tags). "
+            "--from-github uses the latest vX.Y.Z GitHub tag for that distribution's repo "
+            "(OWNER/REPO from PyPI project URLs if you omit it). "
+            "--version / --installed are explicit overrides."
         )
     )
     ap.add_argument(
@@ -283,15 +352,18 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument(
         "--installed",
         action="store_true",
-        help="use importlib.metadata.version for --distribution in this env",
+        help="use installed version for --distribution, normalized to X.Y.Z (dev/post/local stripped)",
     )
     ap.add_argument(
         "--from-github",
-        metavar="OWNER/REPO",
+        nargs="?",
+        const="",
         default=None,
+        metavar="OWNER/REPO",
         help=(
-            "pin to highest vMAJOR.MINOR.PATCH tag from GitHub API (e.g. pymergetic/easybind). "
-            "Use when the tag exists but PyPI does not yet. Set GITHUB_TOKEN for private repos."
+            "pin to highest vMAJOR.MINOR.PATCH tag on GitHub. "
+            "If OWNER/REPO is omitted, read github.com/OWNER/REPO from PyPI metadata for --distribution. "
+            "Set GITHUB_TOKEN for private repos."
         ),
     )
     ap.add_argument("--dry-run", action="store_true", help="do not write the file")
@@ -316,18 +388,38 @@ def main(argv: list[str] | None = None) -> int:
         print("error: empty --distribution", file=sys.stderr)
         return 2
 
+    ver_source: str
     if ns.installed:
-        ver = installed_distribution_version(dist)
-    elif ns.from_github is not None:
+        raw_installed = installed_distribution_version(dist)
         try:
-            ver = latest_release_version_from_github(ns.from_github.strip())
+            ver = compatible_release_pin_from_installed_version(raw_installed)
         except ValueError as e:
             print(f"error: {e}", file=sys.stderr)
             return 1
+        if raw_installed != ver:
+            print(
+                f"note: installed {dist}=={raw_installed!r} -> pin ~={ver} (PEP 440 release triple)",
+                file=sys.stderr,
+            )
+        ver_source = "installed"
+    elif ns.from_github is not None:
+        raw = ns.from_github.strip()
+        try:
+            if not raw:
+                owner_repo = github_owner_repo_from_pypi_distribution(dist)
+            else:
+                owner_repo = raw
+            ver = latest_release_version_from_github(owner_repo)
+        except ValueError as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 1
+        ver_source = "github"
     elif ns.version:
         ver = ns.version.strip()
+        ver_source = "explicit"
     else:
         ver = fetch_pypi_version(dist)
+        ver_source = "pypi"
 
     if not _VERSION_RE.match(ver):
         print(f"error: bad version string: {ver!r}", file=sys.stderr)
@@ -341,6 +433,20 @@ def main(argv: list[str] | None = None) -> int:
 
     action = "would update" if ns.dry_run else "updated"
     print(f"{action} {n} {dist}~= pin(s) to ~={ver} in {pyproject}")
+
+    # PyPI / venv often lag a v* tag on GitHub.
+    if ns.dry_run and ver_source in ("pypi", "installed"):
+        try:
+            or_ = github_owner_repo_from_pypi_distribution(dist)
+            gh_ver = latest_release_version_from_github(or_)
+            if _semver_tuple(gh_ver) > _semver_tuple(ver):
+                print(
+                    f"hint: github.com/{or_} has v{gh_ver} but {ver_source} gave {ver}. "
+                    "Re-run with: easybind-pin-pyproject --dry-run --from-github",
+                )
+        except ValueError:
+            pass
+
     return 0
 
 

@@ -8,7 +8,7 @@ dynamic = ["version"]
 description = "Self-registering nanobind helpers (import as easybind)"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = ["nanobind~=2.12.0"]
+dependencies = ["nanobind~=2.12.0", "packaging>=23"]
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
 authors = [

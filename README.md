@@ -66,7 +66,8 @@ Use **`easybind.devtools`** or the **`easybind-pin-pyproject`** CLI to rewrite e
 ```bash
 easybind-pin-pyproject --dry-run
 easybind-pin-pyproject
-easybind-pin-pyproject --from-github pymergetic/easybind   # latest v* tag via GitHub API (PyPI may lag)
+easybind-pin-pyproject --from-github             # GitHub OWNER/REPO from PyPI metadata for --distribution
+easybind-pin-pyproject --from-github ORG/REPO    # override when PyPI has no GitHub URL
 easybind-pin-pyproject --installed
 easybind-pin-pyproject --version 0.2.3
 easybind-pin-pyproject --distribution cppdantic
