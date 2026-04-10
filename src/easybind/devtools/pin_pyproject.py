@@ -4,15 +4,19 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 import time
 from pathlib import Path
 from urllib.error import HTTPError
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 # PEP 440 version suitable for ``~=`` RHS in typical pyproject pins (numeric release).
 _VERSION_RE = re.compile(r"^[0-9]+(?:\.[0-9]+)*$")
+
+# Release tags: ``vMAJOR.MINOR.PATCH`` (GitHub / git tag style).
+_V_SEMVER_TAG = re.compile(r"^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 
 # Reject pathological / mistaken distribution strings (full re.escape covers the rest).
 _DIST_OK = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9._-]*$")
@@ -121,6 +125,76 @@ def installed_distribution_version(package: str = "easybind") -> str:
     return version(package)
 
 
+def _github_request_json(url: str, *, token: str | None, timeout_s: float) -> object:
+    req = Request(url, headers={"Accept": "application/vnd.github+json"})
+    if token:
+        req.add_header("Authorization", f"Bearer {token}")
+    with urlopen(req, timeout=timeout_s) as r:
+        return json.load(r)
+
+
+def latest_release_version_from_github(
+    owner_repo: str,
+    *,
+    token: str | None = None,
+    timeout_s: float = 30.0,
+) -> str:
+    """Return the highest ``vMAJOR.MINOR.PATCH`` tag on GitHub as ``X.Y.Z`` (no local git clone).
+
+    Uses ``GET /repos/{owner}/{repo}/tags`` (paginated). Works when the tag exists on GitHub but
+    PyPI has not published the wheel yet. *owner_repo* is ``OWNER/REPO`` (e.g. ``pymergetic/easybind``).
+
+    Set ``GITHUB_TOKEN`` or ``GH_TOKEN`` (or pass *token*) for private repos or higher rate limits.
+    """
+    s = owner_repo.strip().strip("/")
+    parts = s.split("/")
+    if len(parts) != 2 or not parts[0] or not parts[1]:
+        raise ValueError(f"expected OWNER/REPO, got {owner_repo!r}")
+
+    owner, repo = parts[0], parts[1]
+    tok = token if token is not None else os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+
+    best: tuple[int, int, int] | None = None
+    best_ver: str | None = None
+    page = 1
+    per_page = 100
+    while page <= 100:
+        url = f"https://api.github.com/repos/{owner}/{repo}/tags?per_page={per_page}&page={page}"
+        try:
+            data = _github_request_json(url, token=tok, timeout_s=timeout_s)
+        except HTTPError as e:
+            detail = ""
+            try:
+                detail = e.read().decode("utf-8", errors="replace")[:500]
+            except Exception:
+                pass
+            raise ValueError(
+                f"GitHub API HTTP {e.code} for {owner}/{repo} (set GITHUB_TOKEN for private repos): {detail}"
+            ) from e
+        if not isinstance(data, list) or len(data) == 0:
+            break
+        for item in data:
+            if not isinstance(item, dict):
+                continue
+            name = item.get("name")
+            if not isinstance(name, str):
+                continue
+            m = _V_SEMVER_TAG.fullmatch(name.strip())
+            if not m:
+                continue
+            t = (int(m.group(1)), int(m.group(2)), int(m.group(3)))
+            if best is None or t > best:
+                best = t
+                best_ver = f"{m.group(1)}.{m.group(2)}.{m.group(3)}"
+        if len(data) < per_page:
+            break
+        page += 1
+
+    if best_ver is None:
+        raise ValueError(f"no vMAJOR.MINOR.PATCH tags found for github.com/{owner}/{repo}")
+    return best_ver
+
+
 def bump_compatible_pins(pyproject_toml: str, distribution: str, version: str) -> tuple[str, int]:
     """Replace each ``{distribution}~=X.Y.Z`` with ``{distribution}~={version}``.
 
@@ -182,9 +256,9 @@ def main(argv: list[str] | None = None) -> int:
         description=(
             "Set every {distribution}~= pin in pyproject.toml "
             "(default distribution: easybind). "
-            "Default version is latest on PyPI — that can lag a git tag or a wheel still uploading; "
-            "use --version X.Y.Z when you already know the release, or --installed to match "
-            "the package in the current environment (e.g. editable install from the release commit)."
+            "Default version is latest on PyPI (can lag CI). "
+            "Use --from-github OWNER/REPO for the latest vX.Y.Z tag on GitHub (no local git); "
+            "use --version when you know the number; --installed uses the env's installed wheel."
         )
     )
     ap.add_argument(
@@ -209,13 +283,27 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument(
         "--installed",
         action="store_true",
-        help="use importlib.metadata.version for --distribution in this env (e.g. after pip install -e ../easybind)",
+        help="use importlib.metadata.version for --distribution in this env",
+    )
+    ap.add_argument(
+        "--from-github",
+        metavar="OWNER/REPO",
+        default=None,
+        help=(
+            "pin to highest vMAJOR.MINOR.PATCH tag from GitHub API (e.g. pymergetic/easybind). "
+            "Use when the tag exists but PyPI does not yet. Set GITHUB_TOKEN for private repos."
+        ),
     )
     ap.add_argument("--dry-run", action="store_true", help="do not write the file")
     ns = ap.parse_args(argv)
 
-    if ns.version and ns.installed:
-        print("error: use only one of --version or --installed", file=sys.stderr)
+    nsrc = sum(
+        1
+        for x in (ns.version is not None, ns.installed, ns.from_github is not None)
+        if x
+    )
+    if nsrc > 1:
+        print("error: use at most one of --version, --installed, or --from-github", file=sys.stderr)
         return 2
 
     pyproject = ns.pyproject if ns.pyproject is not None else Path.cwd() / "pyproject.toml"
@@ -230,6 +318,12 @@ def main(argv: list[str] | None = None) -> int:
 
     if ns.installed:
         ver = installed_distribution_version(dist)
+    elif ns.from_github is not None:
+        try:
+            ver = latest_release_version_from_github(ns.from_github.strip())
+        except ValueError as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 1
     elif ns.version:
         ver = ns.version.strip()
     else:

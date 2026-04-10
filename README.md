@@ -61,16 +61,19 @@ Use **`easybind.devtools`** or the **`easybind-pin-pyproject`** CLI to rewrite e
 - **cppdantic** pinning **easybind** in several tables.
 - A future project pinning **cppdantic** the same way: pass **`--distribution cppdantic`**.
 
-**CLI** (defaults: **`distribution=easybind`**, version = latest on PyPI for that distribution; run from the tree that contains **`pyproject.toml`**):
+**CLI** (defaults: **`distribution=easybind`**, version = latest on PyPI; run from the tree that contains **`pyproject.toml`**):
 
 ```bash
 easybind-pin-pyproject --dry-run
 easybind-pin-pyproject
+easybind-pin-pyproject --from-github pymergetic/easybind   # latest v* tag via GitHub API (PyPI may lag)
 easybind-pin-pyproject --installed
 easybind-pin-pyproject --version 0.2.3
 easybind-pin-pyproject --distribution cppdantic
 easybind-pin-pyproject --pyproject /path/to/pyproject.toml
 ```
+
+Use **`GITHUB_TOKEN`** for private GitHub repos or higher API rate limits.
 
 **Other devtools CLIs** (after **`pip install`** / **`uv pip install -e .`**, or run **`scripts/…`** shims from a git checkout):
 
