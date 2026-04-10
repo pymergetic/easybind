@@ -37,3 +37,7 @@ Locally, a plain `python -m build` on Linux may still emit a bare `linux_x86_64`
 ## Submodule / monorepo note
 
 If this repo is a **git submodule** inside another project, **tags for versioning must exist on this repository’s own remote**, not only on the parent repo. Tag and release from the `easybind` repo (or push tags there after merging).
+
+## Downstream: cppdantic
+
+The **cppdantic** demo package depends on **easybind** with a compatible-release pin (`easybind~=A.B.C` in its `pyproject.toml`). **Release easybind to PyPI first**, then bump those pins in the cppdantic repo to the new **`A.B.C`** before tagging cppdantic. See **cppdantic**’s **`RELEASING.md`** for the full order.
