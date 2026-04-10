@@ -61,13 +61,14 @@ Use **`easybind.devtools`** or the **`easybind-pin-pyproject`** CLI to rewrite e
 - **cppdantic** pinning **easybind** in several tables.
 - A future project pinning **cppdantic** the same way: pass **`--distribution cppdantic`**.
 
-**CLI** (defaults: **`distribution=easybind`**, version = latest on PyPI; run from the tree that contains **`pyproject.toml`**):
+**CLI** (defaults: **`distribution=easybind`**, version = highest **`v*`** tag on **GitHub** — repo URL taken from that distribution’s PyPI metadata; run from the tree that contains **`pyproject.toml`**):
 
 ```bash
 easybind-pin-pyproject --dry-run
 easybind-pin-pyproject
-easybind-pin-pyproject --from-github             # GitHub OWNER/REPO from PyPI metadata for --distribution
-easybind-pin-pyproject --from-github ORG/REPO    # override when PyPI has no GitHub URL
+easybind-pin-pyproject --from-pypi              # PyPI “latest published” instead of GitHub tags
+easybind-pin-pyproject --from-github             # same as no flag; optional OWNER/REPO override
+easybind-pin-pyproject --from-github ORG/REPO
 easybind-pin-pyproject --installed
 easybind-pin-pyproject --version 0.2.3
 easybind-pin-pyproject --distribution cppdantic
@@ -76,7 +77,7 @@ easybind-pin-pyproject --pyproject /path/to/pyproject.toml
 
 Use **`GITHUB_TOKEN`** for private GitHub repos or higher API rate limits.
 
-**`--from-github`:** GitHub’s tags API is sometimes a few seconds behind right after you push a new `v*` tag. If **`easybind-pin-pyproject --dry-run --from-github`** still shows the previous release, wait briefly and run again (or pin with **`--version`** until the API catches up).
+**GitHub tags API:** responses can be a few seconds behind right after you push a new **`v*`** tag. If **`easybind-pin-pyproject --dry-run`** still shows the previous release, wait briefly and run again (or pin with **`--version`** until the API catches up).
 
 **Other devtools CLIs** (after **`pip install`** / **`uv pip install -e .`**, or run **`scripts/…`** shims from a git checkout):
 
@@ -91,15 +92,18 @@ easybind-wait-pypi                # poll PyPI until pins resolve (downstream CI)
 from easybind.devtools import (
     bump_compatible_pins_in_file,
     fetch_pypi_version,
+    github_owner_repo_from_pypi_distribution,
+    latest_release_version_from_github,
 )
 
-# Pin all easybind~= lines to latest PyPI easybind
-ver = fetch_pypi_version("easybind")
+# Match CLI default: latest v* tag on GitHub (same as easybind-pin-pyproject with no version flags)
+or_ = github_owner_repo_from_pypi_distribution("easybind")
+ver = latest_release_version_from_github(or_)
 bump_compatible_pins_in_file("pyproject.toml", "easybind", ver)
 
-# Pin all cppdantic~= lines to latest PyPI cppdantic (e.g. downstream of cppdantic)
-ver = fetch_pypi_version("cppdantic")
-bump_compatible_pins_in_file("pyproject.toml", "cppdantic", ver)
+# Or: latest published on PyPI (CLI: --from-pypi)
+ver = fetch_pypi_version("easybind")
+bump_compatible_pins_in_file("pyproject.toml", "easybind", ver)
 ```
 
 Shorthands **`bump_easybind_compatible_pins`** / **`bump_easybind_compatible_pins_in_file`** remain for **`distribution=\"easybind\"`** only.

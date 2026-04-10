@@ -327,10 +327,10 @@ def main(argv: list[str] | None = None) -> int:
         description=(
             "Set every {distribution}~= pin in pyproject.toml "
             "(default distribution: easybind). "
-            "Default version is latest on PyPI (can lag tags). "
-            "--from-github uses the latest vX.Y.Z GitHub tag for that distribution's repo "
-            "(OWNER/REPO from PyPI project URLs if you omit it); the GitHub tags API can lag "
-            "briefly after a new tag push. "
+            "Default version is the highest vX.Y.Z tag on GitHub for that distribution's repo "
+            "(github.com/OWNER/REPO is read from PyPI project URLs; override with --from-github ORG/REPO). "
+            "The GitHub tags API can lag briefly after a new tag push. "
+            "Use --from-pypi for PyPI's published latest instead. "
             "--version / --installed are explicit overrides."
         )
     )
@@ -351,12 +351,20 @@ def main(argv: list[str] | None = None) -> int:
         "--version",
         metavar="X.Y.Z",
         default=None,
-        help="pin to this exact release (use when PyPI does not list it yet, e.g. CI still publishing)",
+        help="pin to this exact release (e.g. CI still publishing or tags API stale)",
     )
     ap.add_argument(
         "--installed",
         action="store_true",
         help="use installed version for --distribution, normalized to X.Y.Z (dev/post/local stripped)",
+    )
+    ap.add_argument(
+        "--from-pypi",
+        action="store_true",
+        help=(
+            "use latest published version from PyPI (pypi.org/.../json info.version) instead of "
+            "the default (latest GitHub v* tag)"
+        ),
     )
     ap.add_argument(
         "--from-github",
@@ -365,8 +373,8 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         metavar="OWNER/REPO",
         help=(
-            "pin to highest vMAJOR.MINOR.PATCH tag on GitHub. "
-            "If OWNER/REPO is omitted, read github.com/OWNER/REPO from PyPI metadata for --distribution. "
+            "same default as no flag: pin to highest vMAJOR.MINOR.PATCH tag on GitHub. "
+            "If you pass OWNER/REPO, use that repo instead of discovering it from PyPI metadata. "
             "The tags list can lag a few seconds after you push a new tag; re-run if the pin looks stale. "
             "Set GITHUB_TOKEN for private repos."
         ),
@@ -376,11 +384,19 @@ def main(argv: list[str] | None = None) -> int:
 
     nsrc = sum(
         1
-        for x in (ns.version is not None, ns.installed, ns.from_github is not None)
+        for x in (
+            ns.version is not None,
+            ns.installed,
+            ns.from_pypi,
+            ns.from_github is not None,
+        )
         if x
     )
     if nsrc > 1:
-        print("error: use at most one of --version, --installed, or --from-github", file=sys.stderr)
+        print(
+            "error: use at most one of --version, --installed, --from-pypi, or --from-github",
+            file=sys.stderr,
+        )
         return 2
 
     pyproject = ns.pyproject if ns.pyproject is not None else Path.cwd() / "pyproject.toml"
@@ -407,8 +423,19 @@ def main(argv: list[str] | None = None) -> int:
                 file=sys.stderr,
             )
         ver_source = "installed"
-    elif ns.from_github is not None:
-        raw = ns.from_github.strip()
+    elif ns.from_pypi:
+        try:
+            ver = fetch_pypi_version(dist)
+        except ValueError as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 1
+        ver_source = "pypi"
+    elif ns.version is not None:
+        ver = ns.version.strip()
+        ver_source = "explicit"
+    else:
+        # Default and --from-github [OWNER/REPO]: latest v* tag on GitHub.
+        raw = ns.from_github.strip() if ns.from_github is not None else ""
         try:
             if not raw:
                 owner_repo = github_owner_repo_from_pypi_distribution(dist)
@@ -419,12 +446,6 @@ def main(argv: list[str] | None = None) -> int:
             print(f"error: {e}", file=sys.stderr)
             return 1
         ver_source = "github"
-    elif ns.version:
-        ver = ns.version.strip()
-        ver_source = "explicit"
-    else:
-        ver = fetch_pypi_version(dist)
-        ver_source = "pypi"
 
     if not _VERSION_RE.match(ver):
         print(f"error: bad version string: {ver!r}", file=sys.stderr)
@@ -439,7 +460,7 @@ def main(argv: list[str] | None = None) -> int:
     action = "would update" if ns.dry_run else "updated"
     print(f"{action} {n} {dist}~= pin(s) to ~={ver} in {pyproject}")
 
-    # PyPI / venv often lag a v* tag on GitHub.
+    # PyPI / venv often lag a v* tag on GitHub (default pin source is GitHub).
     if ns.dry_run and ver_source in ("pypi", "installed"):
         try:
             or_ = github_owner_repo_from_pypi_distribution(dist)
@@ -447,7 +468,7 @@ def main(argv: list[str] | None = None) -> int:
             if _semver_tuple(gh_ver) > _semver_tuple(ver):
                 print(
                     f"hint: github.com/{or_} has v{gh_ver} but {ver_source} gave {ver}. "
-                    "Re-run with: easybind-pin-pyproject --dry-run --from-github",
+                    "Default pinning follows GitHub tags; run: easybind-pin-pyproject --dry-run",
                 )
         except ValueError:
             pass
