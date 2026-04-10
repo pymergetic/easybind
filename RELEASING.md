@@ -39,6 +39,8 @@ Run from the **easybind** repo root. Requires a **clean** working tree.
 
 Pushing a tag matching `v*` triggers `.github/workflows/publish.yml`, which builds and uploads to PyPI.
 
+**Downstream:** projects that pin **easybind** can use **`scripts/wait_pypi_release.py`** in their own CI (see docstring): it waits until the pinned release exists on PyPI before building — useful when the consumer tag is pushed immediately after the easybind tag.
+
 Create a **repository secret** `PYPI_API_TOKEN` with a PyPI API token scoped to this project (or switch the workflow to [trusted publishing](https://docs.pypi.org/trusted-publishers/)).
 
 ## Platforms

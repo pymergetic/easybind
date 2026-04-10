@@ -32,6 +32,11 @@ Homepage = "https://github.com/pymergetic/easybind"
 Repository = "https://github.com/pymergetic/easybind"
 Issues = "https://github.com/pymergetic/easybind/issues"
 
+# Scripts under scripts/ add src to sys.path at runtime; pyright/pylance need this too.
+# See also pyrightconfig.json in this directory (nearest config for files under external/easybind/).
+[tool.pyright]
+extraPaths = ["src"]
+
 [project.scripts]
 easybind-pin-pyproject = "easybind.devtools.pin_pyproject:main"
 

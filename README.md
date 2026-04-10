@@ -91,6 +91,8 @@ bump_compatible_pins_in_file("pyproject.toml", "cppdantic", ver)
 
 Shorthands **`bump_easybind_compatible_pins`** / **`bump_easybind_compatible_pins_in_file`** remain for **`distribution=\"easybind\"`** only.
 
+**CI (downstream):** **`scripts/wait_pypi_release.py`** polls PyPI until the version implied by your **`{distribution}~=…`** pins exists (no **`pip install easybind`** required if you set **`PYTHONPATH`** to this repo’s **`src`**). See **`single_compatible_pin_version`** in **`easybind.devtools`**.
+
 ## Core idea
 - Each namespace/module defines a `ModuleNode` and a bind callback.
 - The module entry point calls `apply_init` to run the callback and recurse.

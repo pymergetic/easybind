@@ -53,6 +53,26 @@ def compatible_pin_versions(pyproject_toml: str, distribution: str) -> list[str]
     return [m.group(2) for m in pat.finditer(pyproject_toml)]
 
 
+def single_compatible_pin_version(
+    pyproject_toml: str,
+    distribution: str,
+    *,
+    empty_pins_suffix: str = "",
+) -> str:
+    """Return the version string if all ``{distribution}~=…`` pins agree; else raise ``ValueError``."""
+    vers = compatible_pin_versions(pyproject_toml, distribution)
+    if not vers:
+        raise ValueError(
+            f"no `{distribution}~=...` pins in pyproject.toml{empty_pins_suffix}"
+        )
+    uniq = set(vers)
+    if len(uniq) != 1:
+        raise ValueError(
+            f"{distribution}~= pins disagree: {sorted(uniq)!r}; fix pyproject.toml first"
+        )
+    return vers[0]
+
+
 def installed_distribution_version(package: str = "easybind") -> str:
     """Return ``importlib.metadata.version(package)`` for the active environment."""
     from importlib.metadata import version
