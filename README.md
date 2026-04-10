@@ -2,12 +2,37 @@
 
 Simple self-registering helpers for distributed nanobind bindings.
 
+## Install
+
+```bash
+pip install easybind
+```
+
+```python
+import easybind
+from easybind import sample  # optional demo module
+```
+
+**PyPI project:** [`easybind`](https://pypi.org/project/easybind/) (same name as the **`import`**).
+
+**Version:** Set by **Git tags** at build time (`v0.1.0`, …) via setuptools-scm; see [RELEASING.md](RELEASING.md). At runtime, `easybind._version.__version__` is written when the wheel is built (or use `importlib.metadata.version("easybind")`).
+
+### Local dev / clangd
+
+An **editable install** configures CMake under `./build/` and generates **`build/compile_commands.json`**, which **clangd** picks up via [`.clangd`](.clangd) — same database as the Python build, no second configure step:
+
+```bash
+uv pip install -e .    # or: pip install -e .
+```
+
+If you need `compile_commands.json` without pip, run [`scripts/clangd-update.sh`](scripts/clangd-update.sh) (plain `cmake -S . -B build …`).
+
 ## Python layer
 The Python package is implemented as native extensions. It exposes:
 
-- `pymergetic.easybind` (core helpers and macros)
-- `pymergetic.easybind.module` (module tree API)
-- `pymergetic.easybind.sample` (demo bindings)
+- `easybind` (core helpers and macros)
+- `easybind.module` (module tree API)
+- `easybind.sample` (demo bindings)
 
 ## Build-time SDK
 `easybind` provides CMake helpers for hybrid extensions:
@@ -18,7 +43,7 @@ The Python package is implemented as native extensions. It exposes:
 Example:
 ```cmake
 find_package(easybind CONFIG REQUIRED)
-easybind_add_extension(my_module src_bind/pymergetic/my_pkg/__cpp__/module.cpp)
+easybind_add_extension(my_module src_bind/my_pkg/__cpp__/module.cpp)
 target_link_libraries(my_module PRIVATE easybind::easybind)
 ```
 
@@ -27,7 +52,7 @@ target_link_libraries(my_module PRIVATE easybind::easybind)
 - The module entry point calls `apply_init` to run the callback and recurse.
 - Submodules are created on demand and registered in `sys.modules`.
 - Shared-object modules are marked so recursion stops at their boundary.
-- A minimal sample module lives at `pymergetic.easybind.sample`.
+- A minimal sample module lives at `easybind.sample`.
 
 ## Developer note: layout rules
 - `__init__.cpp` marks the Python boundary (NB_MODULE) for a package/module.
@@ -50,11 +75,11 @@ struct PeerInfo {
 
 ### 2) Bind it in a separate file (module node)
 ```cpp
-#include <pymergetic/easybind/bind.hpp>
+#include <easybind/bind.hpp>
 
 struct PeerInfo;  // forward declare or include the header
 
-EASYBIND_NS_MODULE(pymergetic::my_pkg, m, false, {
+EASYBIND_NS_MODULE(my_pkg, m, false, {
     nanobind::class_<PeerInfo>(m, "PeerInfo")
         .def(nanobind::init<>())
         .def_rw("peer_id", &PeerInfo::peer_id)
@@ -64,24 +89,23 @@ EASYBIND_NS_MODULE(pymergetic::my_pkg, m, false, {
 
 ### 3) Module entry point (shared-object boundary)
 Use this only for the package that has its own `.so` and NB_MODULE entry point.
-Do not pair it with `EASYBIND_NS_MODULE` for the same `pymergetic::my_pkg` name.
+Do not pair it with `EASYBIND_NS_MODULE` for the same `my_pkg` name.
 If you need to add bindings from another file, use `EASYBIND_NS_MODULE_EXTEND`
 to extend the same module node instead.
 ```cpp
-#include <pymergetic/easybind/bind.hpp>
+#include <easybind/bind.hpp>
 
-EASYBIND_NS_MODULE_SHARED_OBJECT(pymergetic::my_pkg, my_pkg, m, true, {
-    m.doc() = "pymergetic.my_pkg module";
+EASYBIND_NS_MODULE_SHARED_OBJECT(my_pkg, my_pkg, m, true, {
+    m.doc() = "my_pkg module";
 });
 ```
 
 ### 4) Extend from another file
 ```cpp
-#include <pymergetic/easybind/bind.hpp>
+#include <easybind/bind.hpp>
 
-EASYBIND_NS_MODULE_EXTEND(pymergetic::my_pkg, m, {
+EASYBIND_NS_MODULE_EXTEND(my_pkg, m, {
     m.def("ping", [] { return "pong"; });
 });
 ```
-
 

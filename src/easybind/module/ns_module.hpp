@@ -3,13 +3,13 @@
 #include <cstring>
 #include <string>
 
-#include <pymergetic/easybind/module/node.hpp>
+#include <easybind/module/node.hpp>
 
 //
 // Helpers to declare easybind module nodes with minimal boilerplate.
 //
 
-namespace pymergetic::easybind::module::detail {
+namespace easybind::module::detail {
 
 inline std::string namespace_to_full_name(const char* ns) {
   std::string out;
@@ -26,7 +26,7 @@ inline std::string namespace_to_full_name(const char* ns) {
   return out;
 }
 
-}  // namespace pymergetic::easybind::module::detail
+}  // namespace easybind::module::detail
 
 // Usage:
 // EASYBIND_NS_MODULE(ns::path, m, is_package, {
@@ -41,9 +41,9 @@ inline std::string namespace_to_full_name(const char* ns) {
   namespace {                                                                  \
   void __init_bind__(nanobind::module_& MODULE_VAR) BODY                        \
   const std::string __init_full_name__ =                                        \
-      ::pymergetic::easybind::module::detail::namespace_to_full_name(#NS);      \
-  ::pymergetic::easybind::module::ModuleNode* __init__ =                        \
-      ::pymergetic::easybind::module::ModuleNode::create(                       \
+      ::easybind::module::detail::namespace_to_full_name(#NS);      \
+  ::easybind::module::ModuleNode* __init__ =                        \
+      ::easybind::module::ModuleNode::create(                       \
           __init_full_name__,                                                   \
           __init_bind__,                                                       \
           IS_PACKAGE,                                                          \
@@ -56,9 +56,9 @@ inline std::string namespace_to_full_name(const char* ns) {
   namespace {                                                                  \
   void __init_bind__(nanobind::module_& MODULE_VAR) BODY                        \
   const std::string __init_full_name__ =                                        \
-      ::pymergetic::easybind::module::detail::namespace_to_full_name(#NS);      \
-  ::pymergetic::easybind::module::ModuleNode* __init__ =                        \
-      ::pymergetic::easybind::module::ModuleNode::create(                       \
+      ::easybind::module::detail::namespace_to_full_name(#NS);      \
+  ::easybind::module::ModuleNode* __init__ =                        \
+      ::easybind::module::ModuleNode::create(                       \
           __init_full_name__,                                                   \
           __init_bind__,                                                       \
           IS_PACKAGE,                                                          \
@@ -67,9 +67,9 @@ inline std::string namespace_to_full_name(const char* ns) {
   }                                                                            \
   NB_MODULE(MODULE, MODULE_VAR) {                                              \
     const std::string __init_full_name__ =                                      \
-        ::pymergetic::easybind::module::detail::namespace_to_full_name(#NS);    \
-    ::pymergetic::easybind::module::apply_init(                                 \
-        ::pymergetic::easybind::module::ModuleNode::from(__init_full_name__),   \
+        ::easybind::module::detail::namespace_to_full_name(#NS);    \
+    ::easybind::module::apply_init(                                 \
+        ::easybind::module::ModuleNode::from(__init_full_name__),   \
         MODULE_VAR);                                                           \
   }
 
@@ -78,9 +78,9 @@ inline std::string namespace_to_full_name(const char* ns) {
   namespace {                                                                  \
   void __init_bind__(nanobind::module_& MODULE_VAR) BODY                        \
   const std::string __init_full_name__ =                                        \
-      ::pymergetic::easybind::module::detail::namespace_to_full_name(#NS);      \
-  ::pymergetic::easybind::module::ModuleNode* __init__ =                        \
-      ::pymergetic::easybind::module::ModuleNode::extend(                       \
+      ::easybind::module::detail::namespace_to_full_name(#NS);      \
+  ::easybind::module::ModuleNode* __init__ =                        \
+      ::easybind::module::ModuleNode::extend(                       \
           __init_full_name__,                                                   \
           __init_bind__);                                                      \
   }                                                                            \

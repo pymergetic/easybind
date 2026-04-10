@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "clangd: update compile_commands",
+      "label": "clangd: compile_commands (fallback cmake, no pip)",
       "type": "shell",
       "command": "bash",
       "args": ["scripts/clangd-update.sh"],

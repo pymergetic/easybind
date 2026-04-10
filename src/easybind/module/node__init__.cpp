@@ -1,7 +1,7 @@
-#include <pymergetic/easybind/bind.hpp>
+#include <easybind/bind.hpp>
 
 
-EASYBIND_NS_MODULE_EXTEND(pymergetic::easybind::module, m, {
+EASYBIND_NS_MODULE_EXTEND(easybind::module, m, {
 
     nanobind::enum_<ModuleNode::FlagState>(m, "FlagState")
     .value("Unknown", ModuleNode::FlagState::Unknown)

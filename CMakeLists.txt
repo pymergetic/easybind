@@ -30,21 +30,21 @@ endif()
 FetchContent_Declare(
     nanobind
     GIT_REPOSITORY https://github.com/wjakob/nanobind.git
-    GIT_TAG v2.9.2
+    GIT_TAG v2.12.0
 )
 FetchContent_MakeAvailable(nanobind)
 
 FetchContent_Declare(
     magic_enum
     GIT_REPOSITORY https://github.com/Neargye/magic_enum.git
-    GIT_TAG v0.9.6
+    GIT_TAG v0.9.7
 )
 FetchContent_MakeAvailable(magic_enum)
 
 FetchContent_Declare(
     reflect_cpp
     GIT_REPOSITORY https://github.com/getml/reflect-cpp.git
-    GIT_TAG main
+    GIT_TAG v0.24.0
 )
 FetchContent_MakeAvailable(reflect_cpp)
 
@@ -78,183 +78,186 @@ function(easybind_add_extension target_name)
     endif()
 endfunction()
 
-add_library(pymergetic_easybind__module__ SHARED
-    src_cpp/pymergetic/easybind/module/node.cpp
+add_library(easybind__module__ SHARED
+    src/easybind/module/node.cpp
 )
-set_target_properties(pymergetic_easybind__module__ PROPERTIES
-    OUTPUT_NAME "pymergetic-easybind"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/pymergetic/easybind"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/pymergetic/easybind"
+set_target_properties(easybind__module__ PROPERTIES
+    OUTPUT_NAME "easybind"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/easybind"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/easybind"
 )
-target_include_directories(pymergetic_easybind__module__ PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src_cpp
+target_include_directories(easybind__module__ PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
-target_compile_definitions(pymergetic_easybind__module__ PRIVATE EASYBIND_BUILD)
+target_compile_definitions(easybind__module__ PRIVATE EASYBIND_BUILD)
 if(DEFINED nanobind_SOURCE_DIR)
-    target_include_directories(pymergetic_easybind__module__ PRIVATE
+    target_include_directories(easybind__module__ PRIVATE
         ${nanobind_SOURCE_DIR}/include
     )
 endif()
-target_link_libraries(pymergetic_easybind__module__ PRIVATE ${EASYBIND_PYTHON_TARGET})
+target_link_libraries(easybind__module__ PRIVATE ${EASYBIND_PYTHON_TARGET})
 if(TARGET nanobind)
-    target_link_libraries(pymergetic_easybind__module__ PRIVATE nanobind)
+    target_link_libraries(easybind__module__ PRIVATE nanobind)
+    add_dependencies(easybind__module__ nanobind)
 elseif(TARGET nanobind_shared)
-    target_link_libraries(pymergetic_easybind__module__ PRIVATE nanobind_shared)
+    target_link_libraries(easybind__module__ PRIVATE nanobind_shared)
+    add_dependencies(easybind__module__ nanobind_shared)
 elseif(TARGET nanobind-static)
-    target_link_libraries(pymergetic_easybind__module__ PRIVATE nanobind-static)
-    target_compile_definitions(pymergetic_easybind__module__ PRIVATE NB_STATIC)
+    target_link_libraries(easybind__module__ PRIVATE nanobind-static)
+    target_compile_definitions(easybind__module__ PRIVATE NB_STATIC)
+    add_dependencies(easybind__module__ nanobind-static)
 endif()
 if(APPLE)
-    set_target_properties(pymergetic_easybind__module__ PROPERTIES
+    set_target_properties(easybind__module__ PROPERTIES
         BUILD_RPATH "@loader_path"
         INSTALL_RPATH "@loader_path"
     )
 else()
-    set_target_properties(pymergetic_easybind__module__ PROPERTIES
+    set_target_properties(easybind__module__ PROPERTIES
         BUILD_RPATH "$ORIGIN"
         INSTALL_RPATH "$ORIGIN"
     )
 endif()
-set_target_properties(pymergetic_easybind__module__ PROPERTIES
+set_target_properties(easybind__module__ PROPERTIES
     CXX_VISIBILITY_PRESET hidden
     VISIBILITY_INLINES_HIDDEN ON
 )
-target_compile_options(pymergetic_easybind__module__ PRIVATE
+target_compile_options(easybind__module__ PRIVATE
     $<$<CXX_COMPILER_ID:GNU,Clang>:-fvisibility=hidden>
 )
 
-add_library(pymergetic_easybind_sample__module__ SHARED
-    src_cpp/pymergetic/easybind/sample/sample.cpp
+add_library(easybind_sample__module__ SHARED
+    src/easybind/sample/sample.cpp
 )
-set_target_properties(pymergetic_easybind_sample__module__ PROPERTIES
-    OUTPUT_NAME "pymergetic-easybind-sample"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/pymergetic/easybind/sample"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/pymergetic/easybind/sample"
+set_target_properties(easybind_sample__module__ PROPERTIES
+    OUTPUT_NAME "easybind-sample"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/easybind/sample"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/easybind/sample"
 )
-target_include_directories(pymergetic_easybind_sample__module__ PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src_cpp
+target_include_directories(easybind_sample__module__ PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
-target_compile_definitions(pymergetic_easybind_sample__module__ PRIVATE EASYBIND_SAMPLE_BUILD)
+target_compile_definitions(easybind_sample__module__ PRIVATE EASYBIND_SAMPLE_BUILD)
 if(APPLE)
-    set_target_properties(pymergetic_easybind_sample__module__ PROPERTIES
+    set_target_properties(easybind_sample__module__ PROPERTIES
         BUILD_RPATH "@loader_path"
         INSTALL_RPATH "@loader_path"
     )
 else()
-    set_target_properties(pymergetic_easybind_sample__module__ PROPERTIES
+    set_target_properties(easybind_sample__module__ PROPERTIES
         BUILD_RPATH "$ORIGIN"
         INSTALL_RPATH "$ORIGIN"
     )
 endif()
-set_target_properties(pymergetic_easybind_sample__module__ PROPERTIES
+set_target_properties(easybind_sample__module__ PROPERTIES
     CXX_VISIBILITY_PRESET hidden
     VISIBILITY_INLINES_HIDDEN ON
 )
-target_compile_options(pymergetic_easybind_sample__module__ PRIVATE
+target_compile_options(easybind_sample__module__ PRIVATE
     $<$<CXX_COMPILER_ID:GNU,Clang>:-fvisibility=hidden>
 )
 
-easybind_add_extension(pymergetic_easybind_sample__init__
-    src_cpp/pymergetic/easybind/sample/__init__.cpp
+easybind_add_extension(easybind_sample__init__
+    src/easybind/sample/__init__.cpp
 )
-target_link_libraries(pymergetic_easybind_sample__init__ PRIVATE
-    pymergetic_easybind__module__
-    pymergetic_easybind_sample__module__
+target_link_libraries(easybind_sample__init__ PRIVATE
+    easybind__module__
+    easybind_sample__module__
 )
-set_target_properties(pymergetic_easybind_sample__init__ PROPERTIES
+set_target_properties(easybind_sample__init__ PROPERTIES
     OUTPUT_NAME "__init__"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/pymergetic/easybind/sample"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/pymergetic/easybind/sample"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/easybind/sample"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/easybind/sample"
 )
-target_include_directories(pymergetic_easybind_sample__init__ PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src_cpp
+target_include_directories(easybind_sample__init__ PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 if(TARGET magic_enum::magic_enum)
-    target_link_libraries(pymergetic_easybind_sample__init__ PRIVATE magic_enum::magic_enum)
-    target_include_directories(pymergetic_easybind_sample__init__ PRIVATE
+    target_link_libraries(easybind_sample__init__ PRIVATE magic_enum::magic_enum)
+    target_include_directories(easybind_sample__init__ PRIVATE
         ${magic_enum_SOURCE_DIR}/include
     )
 else()
-    target_include_directories(pymergetic_easybind_sample__init__ PRIVATE
+    target_include_directories(easybind_sample__init__ PRIVATE
         ${magic_enum_SOURCE_DIR}/include
     )
 endif()
 if(DEFINED reflect_cpp_SOURCE_DIR)
-    target_include_directories(pymergetic_easybind_sample__init__ PRIVATE
+    target_include_directories(easybind_sample__init__ PRIVATE
         ${reflect_cpp_SOURCE_DIR}/include
     )
 endif()
 if(APPLE)
-    set_target_properties(pymergetic_easybind_sample__init__ PROPERTIES
+    set_target_properties(easybind_sample__init__ PROPERTIES
         BUILD_RPATH "@loader_path"
         INSTALL_RPATH "@loader_path"
     )
 else()
-    set_target_properties(pymergetic_easybind_sample__init__ PROPERTIES
+    set_target_properties(easybind_sample__init__ PROPERTIES
         BUILD_RPATH "$ORIGIN"
         INSTALL_RPATH "$ORIGIN"
     )
 endif()
 
 if(NOT EASYBIND_SKIP_INSTALL)
-    install(TARGETS pymergetic_easybind_sample__module__
-        LIBRARY DESTINATION pymergetic/easybind/sample
-        RUNTIME DESTINATION pymergetic/easybind/sample
-        ARCHIVE DESTINATION pymergetic/easybind/sample
+    install(TARGETS easybind_sample__module__
+        LIBRARY DESTINATION easybind/sample
+        RUNTIME DESTINATION easybind/sample
+        ARCHIVE DESTINATION easybind/sample
     )
-    install(TARGETS pymergetic_easybind_sample__init__
-        LIBRARY DESTINATION pymergetic/easybind/sample
-        RUNTIME DESTINATION pymergetic/easybind/sample
-        ARCHIVE DESTINATION pymergetic/easybind/sample
+    install(TARGETS easybind_sample__init__
+        LIBRARY DESTINATION easybind/sample
+        RUNTIME DESTINATION easybind/sample
+        ARCHIVE DESTINATION easybind/sample
     )
 
     # If nanobind is built as a shared library, ship it alongside extensions so
     # `libnanobind.so` is resolvable at runtime.
     if(TARGET nanobind)
         install(TARGETS nanobind
-            LIBRARY DESTINATION pymergetic/easybind
-            RUNTIME DESTINATION pymergetic/easybind
-            ARCHIVE DESTINATION pymergetic/easybind
+            LIBRARY DESTINATION easybind
+            RUNTIME DESTINATION easybind
+            ARCHIVE DESTINATION easybind
         )
     endif()
 endif()
 
-easybind_add_extension(pymergetic_easybind__init__
-    src_cpp/pymergetic/easybind/__init__.cpp
-    src_cpp/pymergetic/easybind/module/__init__.cpp
-    src_cpp/pymergetic/easybind/module/node__init__.cpp
+easybind_add_extension(easybind__init__
+    src/easybind/__init__.cpp
+    src/easybind/module/__init__.cpp
+    src/easybind/module/node__init__.cpp
 )
-target_link_libraries(pymergetic_easybind__init__ PRIVATE pymergetic_easybind__module__)
-set_target_properties(pymergetic_easybind__init__ PROPERTIES
+target_link_libraries(easybind__init__ PRIVATE easybind__module__)
+set_target_properties(easybind__init__ PROPERTIES
     OUTPUT_NAME "__init__"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/pymergetic/easybind"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/pymergetic/easybind"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/easybind"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/easybind"
 )
-target_include_directories(pymergetic_easybind__init__ PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src_cpp
+target_include_directories(easybind__init__ PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 if(TARGET magic_enum::magic_enum)
-    target_link_libraries(pymergetic_easybind__init__ PRIVATE magic_enum::magic_enum)
-    target_include_directories(pymergetic_easybind__init__ PRIVATE
+    target_link_libraries(easybind__init__ PRIVATE magic_enum::magic_enum)
+    target_include_directories(easybind__init__ PRIVATE
         ${magic_enum_SOURCE_DIR}/include
     )
 else()
-    target_include_directories(pymergetic_easybind__init__ PRIVATE
+    target_include_directories(easybind__init__ PRIVATE
         ${magic_enum_SOURCE_DIR}/include
     )
 endif()
 if(DEFINED reflect_cpp_SOURCE_DIR)
-    target_include_directories(pymergetic_easybind__init__ PRIVATE
+    target_include_directories(easybind__init__ PRIVATE
         ${reflect_cpp_SOURCE_DIR}/include
     )
 endif()
 if(APPLE)
-    set_target_properties(pymergetic_easybind__init__ PROPERTIES
+    set_target_properties(easybind__init__ PROPERTIES
         BUILD_RPATH "@loader_path"
         INSTALL_RPATH "@loader_path"
     )
 else()
-    set_target_properties(pymergetic_easybind__init__ PROPERTIES
+    set_target_properties(easybind__init__ PROPERTIES
         BUILD_RPATH "$ORIGIN"
         INSTALL_RPATH "$ORIGIN"
     )
@@ -264,7 +267,7 @@ endif()
 function(easybind_add_stub_package stub_target_prefix module_target)
     foreach(module_name IN LISTS ARGN)
         string(REPLACE "." "/" module_path "${module_name}")
-        set(output_path "${CMAKE_CURRENT_SOURCE_DIR}/src_py/${module_path}/__init__.pyi")
+        set(output_path "${CMAKE_CURRENT_SOURCE_DIR}/src/${module_path}/__init__.pyi")
         get_filename_component(output_dir "${output_path}" DIRECTORY)
         file(MAKE_DIRECTORY "${output_dir}")
 
@@ -280,27 +283,31 @@ function(easybind_add_stub_package stub_target_prefix module_target)
     endforeach()
 endfunction()
 
-easybind_add_stub_package(pymergetic_easybind
-    pymergetic_easybind__init__
-    pymergetic.easybind
-    pymergetic.easybind.module)
-easybind_add_stub_package(pymergetic_easybind_sample
-    pymergetic_easybind_sample__init__
-    pymergetic.easybind.sample)
+easybind_add_stub_package(easybind
+    easybind__init__
+    easybind
+    easybind.module)
+easybind_add_stub_package(easybind_sample
+    easybind_sample__init__
+    easybind.sample)
 
 if(NOT EASYBIND_SKIP_INSTALL)
-    install(TARGETS pymergetic_easybind__module__
-        LIBRARY DESTINATION pymergetic/easybind
-        RUNTIME DESTINATION pymergetic/easybind
-        ARCHIVE DESTINATION pymergetic/easybind
+    install(TARGETS easybind__module__
+        LIBRARY DESTINATION easybind
+        RUNTIME DESTINATION easybind
+        ARCHIVE DESTINATION easybind
     )
-    install(TARGETS pymergetic_easybind__init__
-        LIBRARY DESTINATION pymergetic/easybind
-        RUNTIME DESTINATION pymergetic/easybind
-        ARCHIVE DESTINATION pymergetic/easybind
+    install(TARGETS easybind__init__
+        LIBRARY DESTINATION easybind
+        RUNTIME DESTINATION easybind
+        ARCHIVE DESTINATION easybind
     )
 
-    install(DIRECTORY src_py/pymergetic
+    install(DIRECTORY src/easybind
         DESTINATION .
+    )
+    # Third-party licenses (nanobind, magic_enum, reflect-cpp): see NOTICE.
+    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/NOTICE"
+        DESTINATION easybind
     )
 endif()

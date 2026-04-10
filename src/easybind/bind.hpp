@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/shared_ptr.h>
@@ -11,9 +11,9 @@
 #include <nanobind/stl/pair.h>
 
 // Convenience macros for binding.
-#include <pymergetic/easybind/module/ns_module.hpp>
+#include <easybind/module/ns_module.hpp>
 
-namespace pymergetic::easybind {
+namespace easybind {
 
 template <typename E>
 nanobind::enum_<E> enum_(nanobind::module_& m, const char* name = nullptr) {
@@ -27,4 +27,4 @@ nanobind::enum_<E> enum_(nanobind::module_& m, const char* name = nullptr) {
   return e;
 }
 
-}  // namespace pymergetic::easybind
+}  // namespace easybind

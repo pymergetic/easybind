@@ -1,42 +1,59 @@
 [build-system]
-requires = ["scikit-build-core>=0.10", "setuptools-scm>=8", "nanobind>=2.11.0"]
+requires = ["scikit-build-core>=0.10", "setuptools-scm>=8", "nanobind>=2.12.0"]
 build-backend = "scikit_build_core.build"
 
 [project]
-name = "pymergetic-easybind"
+name = "easybind"
 dynamic = ["version"]
-description = "Easybind - self-registering nanobind wrapper for PymergeticOS"
+description = "Self-registering nanobind helpers (import as easybind)"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
 authors = [
-  { name = "PymergeticOS Maintainers", email = "maintainers@example.com" }
+  { name = "PymergeticOS Maintainers", email = "raudzus@pymergetic.com" }
 ]
-keywords = ["pymergetic", "easybind", "nanobind", "bindings"]
+keywords = ["easybind", "nanobind", "bindings", "pymergetic"]
 classifiers = [
+  "Development Status :: 4 - Beta",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: C++",
   "Operating System :: POSIX :: Linux",
+  "Typing :: Typed",
 ]
+
+[project.urls]
+Homepage = "https://github.com/pymergetic/easybind"
+Repository = "https://github.com/pymergetic/easybind"
+Issues = "https://github.com/pymergetic/easybind/issues"
 
 [project.optional-dependencies]
 dev = [
   "pytest>=7.0.0",
+  "build>=1.0.0",
+  "twine>=5.0.0",
 ]
 
 [tool.scikit-build]
 cmake.version = ">=3.25"
 logging.level = "INFO"
 metadata.version.provider = "scikit_build_core.metadata.setuptools_scm"
+# Persistent CMake tree: `pip install -e .` / `uv pip install -e .` writes
+# `build/compile_commands.json` for clangd (see `.clangd`).
+build-dir = "build"
+
+[tool.scikit-build.cmake.define]
+CMAKE_EXPORT_COMPILE_COMMANDS = "ON"
 
 [tool.scikit-build.wheel]
-packages = { "pymergetic" = "src_py/pymergetic" }
+packages = { "easybind" = "src/easybind" }
 
+# Version comes from Git tags (see RELEASING.md). Build writes src/easybind/_version.py.
 [tool.setuptools_scm]
 version_scheme = "no-guess-dev"
 local_scheme = "no-local-version"
 fallback_version = "0.0.0"
 root = "."
-relative_to = "pyproject.toml"
+version_file = "src/easybind/_version.py"

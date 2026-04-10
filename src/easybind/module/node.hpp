@@ -8,7 +8,7 @@
 #include <string_view>
 #include <vector>
 
-#include <pymergetic/easybind/export.hpp>
+#include <easybind/export.hpp>
 
 //
 // Core (pure C++) types for the module tree.
@@ -19,7 +19,7 @@ namespace nanobind {
 class module_;
 }  // namespace nanobind
 
-namespace pymergetic::easybind::module {
+namespace easybind::module {
 
 
 class EASYBIND_API ModuleNode {
@@ -87,5 +87,5 @@ EASYBIND_API void set_package_path(nanobind::module_& m);
 
 EASYBIND_API void apply_init(ModuleNode* init_node, nanobind::module_& m);
 
-}  // namespace pymergetic::easybind::module
+}  // namespace easybind::module
  

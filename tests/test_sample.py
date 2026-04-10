@@ -2,19 +2,19 @@ from __future__ import annotations
 
 import pytest
 
-import pymergetic.easybind.sample as sample
+import easybind.sample as sample
 
 
 def test_functions_and_constants() -> None:
     assert sample.add(2, 3) == 5
-    assert sample.greet("pymergetic") == "hello pymergetic"
+    assert sample.greet("easybind") == "hello easybind"
     assert sample.kDefaultValue == 42
-    assert sample.kLibName == "pymergetic.easybind.sample"
+    assert sample.kLibName == "easybind.sample"
     assert abs(sample.kPi - 3.141592653589793) < 1e-12
     assert sample.add_easy(2, 3) == 5
-    assert sample.greet_easy("pymergetic") == "hello pymergetic"
+    assert sample.greet_easy("easybind") == "hello easybind"
     assert sample.kDefaultValue_easy == 42
-    assert sample.kLibName_easy == "pymergetic.easybind.sample"
+    assert sample.kLibName_easy == "easybind.sample"
     assert abs(sample.kPi_easy - 3.141592653589793) < 1e-12
 
 

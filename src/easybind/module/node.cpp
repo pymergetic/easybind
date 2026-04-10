@@ -1,6 +1,6 @@
 #include <nanobind/nanobind.h>
 
-#include <pymergetic/easybind/module/node.hpp>
+#include <easybind/module/node.hpp>
 
 #include <format>
 #include <mutex>
@@ -11,7 +11,7 @@
 // Core (pure C++) implementation for the module tree.
 //
 
-namespace pymergetic::easybind::module {
+namespace easybind::module {
 
 namespace {
 
@@ -350,4 +350,4 @@ void apply_init(ModuleNode* init_node, nanobind::module_& m) {
 }
 
 
-}  // namespace pymergetic::easybind::module
+}  // namespace easybind::module

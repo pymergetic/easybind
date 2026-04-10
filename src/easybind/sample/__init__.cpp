@@ -1,9 +1,9 @@
-#include <pymergetic/easybind/bind.hpp>
+#include <easybind/bind.hpp>
 
-#include <pymergetic/easybind/sample/sample.hpp>
+#include <easybind/sample/sample.hpp>
 
 
-EASYBIND_NS_MODULE_SHARED_OBJECT(pymergetic::easybind::sample, sample, m, true, {
+EASYBIND_NS_MODULE_SHARED_OBJECT(easybind::sample, sample, m, true, {
   m.doc() = "Nanobind sample module for easybind.";
 
 

@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <string>
 
-#include <pymergetic/easybind/export.hpp>
+#include <easybind/export.hpp>
 
 #if defined(EASYBIND_SAMPLE_BUILD)
 #  define EASYBIND_SAMPLE_API EASYBIND_EXPORT
@@ -12,7 +12,7 @@
 #endif
 
 
-namespace pymergetic::easybind::sample {
+namespace easybind::sample {
 
 
 // Enums
@@ -85,4 +85,4 @@ EASYBIND_SAMPLE_API Widget make_widget(const std::string& name,
 EASYBIND_SAMPLE_API Widget make_widget_easy(const std::string& name,
     int value = 0,
     WidgetKind kind = WidgetKind::Basic);
-}  // namespace pymergetic::easybind::sample
+}  // namespace easybind::sample
