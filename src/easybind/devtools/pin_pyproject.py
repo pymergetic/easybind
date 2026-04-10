@@ -212,6 +212,9 @@ def latest_release_version_from_github(
     Uses ``GET /repos/{owner}/{repo}/tags`` (paginated). Works when the tag exists on GitHub but
     PyPI has not published the wheel yet. *owner_repo* is ``OWNER/REPO``.
 
+    The tags endpoint can lag a few seconds right after you push a new tag (eventual consistency /
+    caching). If the version looks stale, wait and call again.
+
     Set ``GITHUB_TOKEN`` or ``GH_TOKEN`` (or pass *token*) for private repos or higher rate limits.
     """
     s = owner_repo.strip().strip("/")
@@ -326,7 +329,8 @@ def main(argv: list[str] | None = None) -> int:
             "(default distribution: easybind). "
             "Default version is latest on PyPI (can lag tags). "
             "--from-github uses the latest vX.Y.Z GitHub tag for that distribution's repo "
-            "(OWNER/REPO from PyPI project URLs if you omit it). "
+            "(OWNER/REPO from PyPI project URLs if you omit it); the GitHub tags API can lag "
+            "briefly after a new tag push. "
             "--version / --installed are explicit overrides."
         )
     )
@@ -363,6 +367,7 @@ def main(argv: list[str] | None = None) -> int:
         help=(
             "pin to highest vMAJOR.MINOR.PATCH tag on GitHub. "
             "If OWNER/REPO is omitted, read github.com/OWNER/REPO from PyPI metadata for --distribution. "
+            "The tags list can lag a few seconds after you push a new tag; re-run if the pin looks stale. "
             "Set GITHUB_TOKEN for private repos."
         ),
     )

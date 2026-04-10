@@ -76,6 +76,8 @@ easybind-pin-pyproject --pyproject /path/to/pyproject.toml
 
 Use **`GITHUB_TOKEN`** for private GitHub repos or higher API rate limits.
 
+**`--from-github`:** GitHub’s tags API is sometimes a few seconds behind right after you push a new `v*` tag. If **`easybind-pin-pyproject --dry-run --from-github`** still shows the previous release, wait briefly and run again (or pin with **`--version`** until the API catches up).
+
 **Other devtools CLIs** (after **`pip install`** / **`uv pip install -e .`**, or run **`scripts/…`** shims from a git checkout):
 
 ```bash
