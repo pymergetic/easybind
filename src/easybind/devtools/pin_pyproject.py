@@ -181,7 +181,10 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(
         description=(
             "Set every {distribution}~= pin in pyproject.toml "
-            "(default distribution: easybind; default version: latest on PyPI)."
+            "(default distribution: easybind). "
+            "Default version is latest on PyPI — that can lag a git tag or a wheel still uploading; "
+            "use --version X.Y.Z when you already know the release, or --installed to match "
+            "the package in the current environment (e.g. editable install from the release commit)."
         )
     )
     ap.add_argument(
@@ -201,12 +204,12 @@ def main(argv: list[str] | None = None) -> int:
         "--version",
         metavar="X.Y.Z",
         default=None,
-        help="pin to this version (default: PyPI latest for --distribution, unless --installed)",
+        help="pin to this exact release (use when PyPI does not list it yet, e.g. CI still publishing)",
     )
     ap.add_argument(
         "--installed",
         action="store_true",
-        help="use the version of --distribution installed in the current environment",
+        help="use importlib.metadata.version for --distribution in this env (e.g. after pip install -e ../easybind)",
     )
     ap.add_argument("--dry-run", action="store_true", help="do not write the file")
     ns = ap.parse_args(argv)
