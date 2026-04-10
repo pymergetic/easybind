@@ -45,6 +45,7 @@ build = "cp311-* cp312-* cp313-* cp314-*"
 # Host runner is x86_64; skip musllinux so only manylinux_* wheels are produced.
 skip = "*musllinux*"
 manylinux-x86_64-image = "manylinux_2_28"
+build-verbosity = 1
 
 [tool.cibuildwheel.linux]
 # scikit-build-core wants CMake >= 3.25; pin if the manylinux image is older.
@@ -52,6 +53,9 @@ before-build = [
     "python -m pip install --upgrade pip",
     "python -m pip install 'cmake>=3.25' ninja",
 ]
+# NB_SHARED ships libnanobind.so in the wheel; repair must run a current auditwheel
+# with an explicit PEP 600 plat tag (see pypa/auditwheel#531).
+repair-wheel-command = "python -m pip install -q --upgrade 'auditwheel>=6.4' && python -m auditwheel repair -v --plat manylinux_2_28_x86_64 -w {dest_dir} {wheel}"
 test-requires = ["pytest>=7.0.0"]
 test-command = "python -m pytest {project}/tests -q"
 
