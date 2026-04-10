@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.25)
 project(easybind LANGUAGES CXX)
 
 include(GNUInstallDirs)
-include(FetchContent)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -26,27 +25,9 @@ else()
     message(FATAL_ERROR "Python imported target not found (expected Python::Module or Python::Python)")
 endif()
 
-# Nanobind - fetch so builds don't depend on a preinstalled CMake package.
-FetchContent_Declare(
-    nanobind
-    GIT_REPOSITORY https://github.com/wjakob/nanobind.git
-    GIT_TAG v2.12.0
-)
-FetchContent_MakeAvailable(nanobind)
-
-FetchContent_Declare(
-    magic_enum
-    GIT_REPOSITORY https://github.com/Neargye/magic_enum.git
-    GIT_TAG v0.9.7
-)
-FetchContent_MakeAvailable(magic_enum)
-
-FetchContent_Declare(
-    reflect_cpp
-    GIT_REPOSITORY https://github.com/getml/reflect-cpp.git
-    GIT_TAG v0.24.0
-)
-FetchContent_MakeAvailable(reflect_cpp)
+# Third-party sources: pins live in cmake/easybind_dependencies.cmake (also installed for consumers).
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/easybind_dependencies.cmake")
+easybind_fetch_third_party_deps()
 
 # Some nanobind configurations don't automatically attach Python include dirs.
 foreach(_nb_tgt IN ITEMS nanobind nanobind_shared nanobind-static)
@@ -327,5 +308,10 @@ if(NOT EASYBIND_SKIP_INSTALL)
     # Third-party licenses (nanobind, magic_enum, reflect-cpp): see NOTICE.
     install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/NOTICE"
         DESTINATION easybind
+    )
+    install(FILES
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/easybind_dependencies.cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/easybind_pip.cmake"
+        DESTINATION easybind/cmake
     )
 endif()

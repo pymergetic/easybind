@@ -35,17 +35,24 @@ The Python package is implemented as native extensions. It exposes:
 - `easybind.sample` (demo bindings)
 
 ## Build-time SDK
-`easybind` provides CMake helpers for hybrid extensions:
+Installed wheels ship CMake helpers under **`easybind/cmake/`**:
 
-- `easybind::build_interface` (INTERFACE): baseline C++20 + PIC + shared include paths
-- `easybind_add_extension(target ...)`: wraps `nanobind_add_module(... NB_SHARED ...)`
+- **`easybind_pip.cmake`** — `easybind_pip_setup()` finds Python, **`nanobind`** (pip), **`libeasybind`**, and include roots for `#include <easybind/...>`, then pulls in **`easybind_dependencies.cmake`**. Helpers: `easybind_pip_link_magic_enum(target)`, `easybind_pip_set_rpath_next_to_easybind(target easybind_pkg_dir)`.
+- **`easybind_dependencies.cmake`** — pins **nanobind**, **magic_enum**, **reflect-cpp** (same tags as this repo). Use **`easybind_fetch_third_party_deps()`** to pull all three, or **`easybind_fetch_nanobind()`** / **`easybind_fetch_magic_enum()`** / **`easybind_fetch_reflect_cpp()`** when you only need a subset (e.g. pip already provides nanobind, so call only **`easybind_fetch_magic_enum()`**).
 
-Example:
+Typical consumer bootstrap:
+
 ```cmake
-find_package(easybind CONFIG REQUIRED)
-easybind_add_extension(my_module src_bind/my_pkg/__cpp__/module.cpp)
-target_link_libraries(my_module PRIVATE easybind::easybind)
+find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
+execute_process(COMMAND "${Python_EXECUTABLE}" -c
+  "import pathlib, easybind; print(pathlib.Path(easybind.__file__).resolve().parent / 'cmake' / 'easybind_pip.cmake')"
+  OUTPUT_VARIABLE _eb_pip OUTPUT_STRIP_TRAILING_WHITESPACE COMMAND_ERROR_IS_FATAL ANY)
+include("${_eb_pip}")
+easybind_pip_setup()
+easybind_fetch_magic_enum()   # if you include easybind headers that need magic_enum
 ```
+
+When developing **inside** this repository, `easybind_add_extension(...)` is defined in the top-level `CMakeLists.txt` (not shipped in the wheel).
 
 ## Core idea
 - Each namespace/module defines a `ModuleNode` and a bind callback.
