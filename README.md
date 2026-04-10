@@ -79,12 +79,14 @@ Use **`GITHUB_TOKEN`** for private GitHub repos or higher API rate limits.
 
 **GitHub tags API:** responses can be a few seconds behind right after you push a new **`v*`** tag. If **`easybind-pin-pyproject --dry-run`** still shows the previous release, wait briefly and run again (or pin with **`--version`** until the API catches up).
 
-**Other devtools CLIs** (after **`pip install`** / **`uv pip install -e .`**, or run **`scripts/…`** shims from a git checkout):
+**Other devtools CLIs** (install **`easybind`** first — **`pip install -e .`** from this repo, or PyPI):
 
 ```bash
 easybind-release-tag --dry-run    # next v* tag + git push (easybind repo)
 easybind-wait-pypi                # poll PyPI until pins resolve (downstream CI)
 ```
+
+Without installing, run the same modules with **`PYTHONPATH`** pointing at this repo’s **`src`** (e.g. **`PYTHONPATH=src python -m easybind.devtools.release_tag`**).
 
 **Library:**
 
@@ -108,7 +110,7 @@ bump_compatible_pins_in_file("pyproject.toml", "easybind", ver)
 
 Shorthands **`bump_easybind_compatible_pins`** / **`bump_easybind_compatible_pins_in_file`** remain for **`distribution=\"easybind\"`** only.
 
-**CI (downstream):** **`easybind-wait-pypi`** (or **`scripts/wait_pypi_release.py`**) wraps **`wait_pypi_for_compatible_pin`** in **`easybind.devtools`** — poll PyPI until the pinned version exists. From a checkout without install, set **`PYTHONPATH`** to this repo’s **`src`** or use the shim script.
+**CI (downstream):** **`easybind-wait-pypi`** wraps **`wait_pypi_for_compatible_pin`** in **`easybind.devtools`** — poll PyPI until the pinned version exists.
 
 ## Core idea
 - Each namespace/module defines a `ModuleNode` and a bind callback.

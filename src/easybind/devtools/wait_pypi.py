@@ -10,7 +10,7 @@ from easybind.devtools.pin_pyproject import wait_pypi_for_compatible_pin
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Entry point for ``easybind-wait-pypi`` and ``scripts/wait_pypi_release.py``."""
+    """Entry point for ``easybind-wait-pypi``."""
     ap = argparse.ArgumentParser(
         description=(
             "Poll PyPI until a release exists for the version pinned as "

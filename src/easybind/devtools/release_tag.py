@@ -15,7 +15,7 @@ from easybind.devtools.release_helpers import (
 
 
 def main(argv: list[str] | None = None, *, repo: Path | None = None) -> int:
-    """Entry point for ``easybind-release-tag`` and ``scripts/release_tag.py``.
+    """Entry point for ``easybind-release-tag``.
 
     *repo* defaults to the current working directory (run from the repository root).
     """

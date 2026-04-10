@@ -22,16 +22,16 @@ Configure credentials with **API token** (`~/.pypirc` or environment variables) 
 
 ## Helper: next semver tag + push
 
-`scripts/release_tag.py` picks the latest **`vMAJOR.MINOR.PATCH`** tag, bumps **patch** by default (or **`--minor`** / **`--major`**), then **`fetch` / `checkout` / `pull`** (unless **`--no-pull`**), creates an **annotated** tag, and **`push`**es branch + tag (unless **`--no-push`** or **`--dry-run`**).
+**`easybind-release-tag`** (after **`pip install -e .`**) picks the latest **`vMAJOR.MINOR.PATCH`** tag, bumps **patch** by default (or **`--minor`** / **`--major`**), then **`fetch` / `checkout` / `pull`** (unless **`--no-pull`**), creates an **annotated** tag, and **`push`**es branch + tag (unless **`--no-push`** or **`--dry-run`**).
 
 ```bash
-./scripts/release_tag.py --dry-run
-./scripts/release_tag.py
-./scripts/release_tag.py --minor
-./scripts/release_tag.py --major
+easybind-release-tag --dry-run
+easybind-release-tag
+easybind-release-tag --minor
+easybind-release-tag --major
 ```
 
-Run from the **easybind** repo root. Requires a **clean** working tree.
+Run from the **easybind** repo root. Requires a **clean** working tree. Without install: **`PYTHONPATH=src python -m easybind.devtools.release_tag`**.
 
 **Tag ≠ PyPI success:** the tag appears on GitHub immediately; the **Publish** workflow can still fail (build, auditwheel, twine). Fix the branch, then tag again or re-run the workflow — PyPI may not have that version until CI goes green.
 
@@ -39,7 +39,7 @@ Run from the **easybind** repo root. Requires a **clean** working tree.
 
 Pushing a tag matching `v*` triggers `.github/workflows/publish.yml`, which builds and uploads to PyPI.
 
-**Downstream:** projects that pin **easybind** can use **`scripts/wait_pypi_release.py`** in their own CI (see docstring): it waits until the pinned release exists on PyPI before building — useful when the consumer tag is pushed immediately after the easybind tag.
+**Downstream:** projects that pin **easybind** can use **`easybind-wait-pypi`** in their own CI: it waits until the pinned release exists on PyPI before building — useful when the consumer tag is pushed immediately after the easybind tag.
 
 Create a **repository secret** `PYPI_API_TOKEN` with a PyPI API token scoped to this project (or switch the workflow to [trusted publishing](https://docs.pypi.org/trusted-publishers/)).
 
