@@ -39,6 +39,8 @@ Run from the repo root (use **`--repo`** for another checkout). If the **only** 
 
 Pushing a tag matching `v*` triggers `.github/workflows/publish.yml`, which builds and uploads to PyPI.
 
+**Re-running the workflow for the same tag** after a successful upload will hit PyPI **“File already exists”** — you cannot replace wheels for a released version. The workflow uses **`skip-existing: true`** so a retry skips files already on PyPI (e.g. after a partial failure) instead of erroring. To ship a **new** build, bump the version and push a **new** `v*` tag.
+
 **Downstream:** projects that pin **easybind** can use **`easybind-wait-pypi`** in their own CI: it waits until the pinned release exists on PyPI before building — useful when the consumer tag is pushed immediately after the easybind tag.
 
 Create a **repository secret** `PYPI_API_TOKEN` with a PyPI API token scoped to this project (or switch the workflow to [trusted publishing](https://docs.pypi.org/trusted-publishers/)).
