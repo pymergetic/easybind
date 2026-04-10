@@ -32,6 +32,9 @@ Homepage = "https://github.com/pymergetic/easybind"
 Repository = "https://github.com/pymergetic/easybind"
 Issues = "https://github.com/pymergetic/easybind/issues"
 
+[project.scripts]
+easybind-pin-pyproject = "easybind.devtools.pin_pyproject:main"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0.0",

@@ -54,6 +54,43 @@ easybind_fetch_magic_enum()   # if you include easybind headers that need magic_
 
 When developing **inside** this repository, `easybind_add_extension(...)` is defined in the top-level `CMakeLists.txt` (not shipped in the wheel).
 
+## Bumping `{distribution}~=…` pins (downstream projects)
+
+Use **`easybind.devtools`** or the **`easybind-pin-pyproject`** CLI to rewrite every compatible-release line **`{name}~=X.Y.Z`** in a **`pyproject.toml`** for any PyPI **distribution** name **`name`** (not only **easybind**). Examples:
+
+- **cppdantic** pinning **easybind** in several tables.
+- A future project pinning **cppdantic** the same way: pass **`--distribution cppdantic`**.
+
+**CLI** (defaults: **`distribution=easybind`**, version = latest on PyPI for that distribution; run from the tree that contains **`pyproject.toml`**):
+
+```bash
+easybind-pin-pyproject --dry-run
+easybind-pin-pyproject
+easybind-pin-pyproject --installed
+easybind-pin-pyproject --version 0.2.3
+easybind-pin-pyproject --distribution cppdantic
+easybind-pin-pyproject --pyproject /path/to/pyproject.toml
+```
+
+**Library:**
+
+```python
+from easybind.devtools import (
+    bump_compatible_pins_in_file,
+    fetch_pypi_version,
+)
+
+# Pin all easybind~= lines to latest PyPI easybind
+ver = fetch_pypi_version("easybind")
+bump_compatible_pins_in_file("pyproject.toml", "easybind", ver)
+
+# Pin all cppdantic~= lines to latest PyPI cppdantic (e.g. downstream of cppdantic)
+ver = fetch_pypi_version("cppdantic")
+bump_compatible_pins_in_file("pyproject.toml", "cppdantic", ver)
+```
+
+Shorthands **`bump_easybind_compatible_pins`** / **`bump_easybind_compatible_pins_in_file`** remain for **`distribution=\"easybind\"`** only.
+
 ## Core idea
 - Each namespace/module defines a `ModuleNode` and a bind callback.
 - The module entry point calls `apply_init` to run the callback and recurse.
