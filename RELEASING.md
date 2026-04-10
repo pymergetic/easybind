@@ -20,6 +20,19 @@ twine upload dist/*    # or TestPyPI: twine upload --repository testpypi dist/*
 
 Configure credentials with **API token** (`~/.pypirc` or environment variables) or use **trusted publishing** (OIDC) from GitHub Actions.
 
+## Helper: next semver tag + push
+
+`scripts/release_tag.py` picks the latest **`vMAJOR.MINOR.PATCH`** tag, bumps **patch** by default (or **`--minor`** / **`--major`**), then **`fetch` / `checkout` / `pull`** (unless **`--no-pull`**), creates an **annotated** tag, and **`push`**es branch + tag (unless **`--no-push`** or **`--dry-run`**).
+
+```bash
+./scripts/release_tag.py --dry-run
+./scripts/release_tag.py
+./scripts/release_tag.py --minor
+./scripts/release_tag.py --major
+```
+
+Run from the **easybind** repo root. Requires a **clean** working tree.
+
 ## CI upload
 
 Pushing a tag matching `v*` triggers `.github/workflows/publish.yml`, which builds and uploads to PyPI.
