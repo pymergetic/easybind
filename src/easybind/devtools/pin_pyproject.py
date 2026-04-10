@@ -33,6 +33,26 @@ def fetch_pypi_version(package: str = "easybind", *, timeout_s: float = 30.0) ->
     return str(data["info"]["version"])
 
 
+def pypi_release_exists(package: str, version: str, *, timeout_s: float = 15.0) -> bool:
+    """Return True if ``https://pypi.org/pypi/{package}/{version}/json`` exists (release uploaded)."""
+    import urllib.error
+
+    url = f"https://pypi.org/pypi/{package}/{version}/json"
+    try:
+        with urllib.request.urlopen(url, timeout=timeout_s) as r:
+            return getattr(r, "status", 200) == 200
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            return False
+        raise
+
+
+def compatible_pin_versions(pyproject_toml: str, distribution: str) -> list[str]:
+    """Return every version string from ``{distribution}~=VERSION`` pins (order preserved)."""
+    pat = _pin_pattern(distribution)
+    return [m.group(2) for m in pat.finditer(pyproject_toml)]
+
+
 def installed_distribution_version(package: str = "easybind") -> str:
     """Return ``importlib.metadata.version(package)`` for the active environment."""
     from importlib.metadata import version

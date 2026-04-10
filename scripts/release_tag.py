@@ -6,6 +6,10 @@ segments instead (resets lower segments to 0).
 
 If there is no ``v*`` tag yet, starts from **v0.0.0** as the notional baseline, then bumps.
 
+**GitHub vs PyPI:** pushing the tag triggers CI, but **PyPI upload can still fail**
+(build error, twine, etc.). You may have a tag on GitHub **without** that version on PyPI
+until you fix CI and re-run or tag again — the tag is not a guarantee of a good wheel.
+
 Examples::
 
     ./scripts/release_tag.py --dry-run

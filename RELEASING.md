@@ -33,6 +33,8 @@ Configure credentials with **API token** (`~/.pypirc` or environment variables) 
 
 Run from the **easybind** repo root. Requires a **clean** working tree.
 
+**Tag ≠ PyPI success:** the tag appears on GitHub immediately; the **Publish** workflow can still fail (build, auditwheel, twine). Fix the branch, then tag again or re-run the workflow — PyPI may not have that version until CI goes green.
+
 ## CI upload
 
 Pushing a tag matching `v*` triggers `.github/workflows/publish.yml`, which builds and uploads to PyPI.
