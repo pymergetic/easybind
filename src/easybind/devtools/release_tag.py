@@ -8,8 +8,11 @@ import sys
 from pathlib import Path
 
 from easybind.devtools.release_helpers import (
+    PYPROJECT_AUTO_COMMIT_MSG,
+    dirty_paths,
     ensure_clean_worktree,
     next_v_tag,
+    prepare_worktree_for_tag,
     tag_push_commands,
 )
 
@@ -44,6 +47,11 @@ def main(argv: list[str] | None = None, *, repo: Path | None = None) -> int:
         default=None,
         help="git repository root (default: current working directory)",
     )
+    ap.add_argument(
+        "--no-auto-commit",
+        action="store_true",
+        help="do not auto-commit a sole pyproject.toml change; require a clean tree",
+    )
     ns = ap.parse_args(argv)
 
     root = repo if repo is not None else ns.repo
@@ -68,12 +76,34 @@ def main(argv: list[str] | None = None, *, repo: Path | None = None) -> int:
     print(f"latest tag: {latest or '(none)'}")
     print(f"next tag:   {new_tag}  (bump {ns.level})")
 
+    paths = dirty_paths(root)
+    auto = not ns.no_auto_commit
+    if paths:
+        if paths == {"pyproject.toml"} and not auto:
+            print(
+                "error: pyproject.toml is modified; commit or stash it, "
+                "or omit --no-auto-commit to commit it automatically before tagging.",
+                file=sys.stderr,
+            )
+            return 1
+        if paths != {"pyproject.toml"}:
+            print(
+                "error: uncommitted changes (not only pyproject.toml); "
+                "commit or stash everything, or leave only pyproject.toml dirty for auto-commit.\n"
+                + "\n".join(sorted(paths)),
+                file=sys.stderr,
+            )
+            return 1
+
     if ns.dry_run:
         print("--- dry-run; commands not executed ---")
+        if paths == {"pyproject.toml"} and auto:
+            print(f"+ git add pyproject.toml && git commit -m {PYPROJECT_AUTO_COMMIT_MSG!r}")
         for c in cmds:
             print("+", " ".join(c))
         return 0
 
+    prepare_worktree_for_tag(root, auto_commit_pyproject=auto)
     ensure_clean_worktree(root)
     for c in cmds:
         subprocess.run(c, cwd=root, check=True)

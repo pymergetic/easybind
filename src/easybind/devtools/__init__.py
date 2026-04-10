@@ -17,9 +17,12 @@ from easybind.devtools.pin_pyproject import (
     wait_pypi_for_compatible_pin,
 )
 from easybind.devtools.release_helpers import (
+    PYPROJECT_AUTO_COMMIT_MSG,
+    dirty_paths,
     ensure_clean_worktree,
     latest_v_tag,
     next_v_tag,
+    prepare_worktree_for_tag,
     tag_push_commands,
 )
 
@@ -30,6 +33,7 @@ __all__ = [
     "bump_easybind_compatible_pins_in_file",
     "compatible_pin_versions",
     "compatible_release_pin_from_installed_version",
+    "dirty_paths",
     "ensure_clean_worktree",
     "fetch_pypi_project_json",
     "fetch_pypi_version",
@@ -38,6 +42,8 @@ __all__ = [
     "latest_release_version_from_github",
     "latest_v_tag",
     "next_v_tag",
+    "prepare_worktree_for_tag",
+    "PYPROJECT_AUTO_COMMIT_MSG",
     "pypi_release_exists",
     "single_compatible_pin_version",
     "tag_push_commands",

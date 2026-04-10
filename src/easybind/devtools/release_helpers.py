@@ -84,9 +84,59 @@ def tag_push_commands(
     return cmds
 
 
+def dirty_paths(repo: Path) -> set[str]:
+    """Paths differing from ``HEAD`` (tracked changes + untracked, repo-relative)."""
+    names: set[str] = set()
+    p = _run(["git", "diff", "--name-only", "HEAD"], cwd=repo, check=True)
+    for line in p.stdout.splitlines():
+        line = line.strip()
+        if line:
+            names.add(line)
+    p = _run(["git", "ls-files", "--others", "--exclude-standard"], cwd=repo, check=True)
+    for line in p.stdout.splitlines():
+        line = line.strip()
+        if line:
+            names.add(line)
+    return names
+
+
+_PYPROJECT_TOML = "pyproject.toml"
+# Message for :func:`prepare_worktree_for_tag` when auto-committing sole ``pyproject.toml`` changes.
+PYPROJECT_AUTO_COMMIT_MSG = "chore: update pyproject.toml"
+
+
 def ensure_clean_worktree(repo: Path) -> None:
     p = _run(["git", "status", "--porcelain"], cwd=repo, check=True)
     if p.stdout.strip():
         raise SystemExit(
             "working tree is not clean; commit or stash before tagging.\n" + p.stdout
         )
+
+
+def prepare_worktree_for_tag(
+    repo: Path,
+    *,
+    auto_commit_pyproject: bool = True,
+    commit_message: str = PYPROJECT_AUTO_COMMIT_MSG,
+) -> None:
+    """If the only change is ``pyproject.toml``, ``git add`` + ``git commit`` it.
+
+    If the tree is already clean, return. If other paths are dirty, exit with an error.
+    If *auto_commit_pyproject* is false, require a clean tree (same as before).
+    """
+    paths = dirty_paths(repo)
+    if not paths:
+        return
+    if paths == {_PYPROJECT_TOML} and auto_commit_pyproject:
+        subprocess.run(
+            ["git", "add", _PYPROJECT_TOML],
+            cwd=repo,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "commit", "-m", commit_message],
+            cwd=repo,
+            check=True,
+        )
+        return
+    ensure_clean_worktree(repo)
