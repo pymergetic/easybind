@@ -28,7 +28,11 @@ Create a **repository secret** `PYPI_API_TOKEN` with a PyPI API token scoped to 
 
 ## Platforms
 
-The default `python -m build` on Linux produces a **single** `linux_x86_64` wheel (and an sdist). To ship **macOS / Windows / manylinux** variants, add **cibuildwheel** (or per-OS CI jobs) and upload all produced wheels in one release.
+**CI** (`.github/workflows/publish.yml`) builds an **sdist** plus **manylinux** wheels via **cibuildwheel**, using the **`manylinux_2_28`** image (`manylinux-x86_64-image` in `pyproject.toml`). PyPI accepts those wheels (e.g. `manylinux_2_28_x86_64`).
+
+There is **no** official PyPA Docker image for **`manylinux_2_27`**; the closest policy with maintained images is **`manylinux_2_28`** (glibc 2.28+). For broader Linux compatibility (older glibc), switch the cibuildwheel image to **`manylinux2014`** in `[tool.cibuildwheel]`.
+
+Locally, a plain `python -m build` on Linux may still emit a bare `linux_x86_64` wheel; do not upload that to PyPI. **macOS / Windows** wheels are not built in CI yet; add matrix jobs or **cibuildwheel** targets if needed.
 
 ## Submodule / monorepo note
 

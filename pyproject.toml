@@ -17,8 +17,10 @@ keywords = ["easybind", "nanobind", "bindings", "pymergetic"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
   "Programming Language :: C++",
   "Operating System :: POSIX :: Linux",
   "Typing :: Typed",
@@ -31,10 +33,27 @@ Issues = "https://github.com/pymergetic/easybind/issues"
 
 [project.optional-dependencies]
 dev = [
-  "pytest>=7.0.0",
-  "build>=1.0.0",
-  "twine>=5.0.0",
+    "pytest>=7.0.0",
+    "build>=1.0.0",
+    "twine>=5.0.0",
 ]
+
+# Linux wheels for CI: see .github/workflows/publish.yml
+[tool.cibuildwheel]
+# official glibc policy with quay.io/pypa/manylinux_2_28_x86_64 (PEP 600 manylinux_2_28_x86_64).
+build = "cp311-* cp312-* cp313-* cp314-*"
+# Host runner is x86_64; skip musllinux so only manylinux_* wheels are produced.
+skip = "*musllinux*"
+manylinux-x86_64-image = "manylinux_2_28"
+
+[tool.cibuildwheel.linux]
+# scikit-build-core wants CMake >= 3.25; pin if the manylinux image is older.
+before-build = [
+    "python -m pip install --upgrade pip",
+    "python -m pip install 'cmake>=3.25' ninja",
+]
+test-requires = ["pytest>=7.0.0"]
+test-command = "python -m pytest {project}/tests -q"
 
 [tool.scikit-build]
 cmake.version = ">=3.25"
