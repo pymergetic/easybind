@@ -55,7 +55,8 @@ before-build = [
 ]
 # NB_SHARED ships libnanobind.so in the wheel; repair must run a current auditwheel
 # with an explicit PEP 600 plat tag (see pypa/auditwheel#531).
-repair-wheel-command = "python -m pip install -q --upgrade 'auditwheel>=6.4' && python -m auditwheel repair -v --plat manylinux_2_28_x86_64 -w {dest_dir} {wheel}"
+# Verbose must be a global flag: `auditwheel -v repair`, not `auditwheel repair -v`.
+repair-wheel-command = "python -m pip install -q --upgrade 'auditwheel>=6.4' && python -m auditwheel -v repair --plat manylinux_2_28_x86_64 -w {dest_dir} {wheel}"
 test-requires = ["pytest>=7.0.0"]
 test-command = "python -m pytest {project}/tests -q"
 
