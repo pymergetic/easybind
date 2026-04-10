@@ -197,18 +197,18 @@ if(DEFINED reflect_cpp_SOURCE_DIR)
         ${reflect_cpp_SOURCE_DIR}/include
     )
 endif()
-# sample/*.so live in easybind/sample/; libeasybind.so and libnanobind.so live in
-# easybind/. RPATH must include the parent directory or auditwheel cannot resolve
-# DT_NEEDED (ValueError: required library "libeasybind.so" could not be located).
+# sample/__init__.so lives in easybind/sample/; it links libeasybind-sample.so (same
+# dir), libeasybind.so + libnanobind.so (parent). RPATH needs BOTH $ORIGIN and
+# $ORIGIN/.. or auditwheel cannot resolve libeasybind-sample.so (path null).
 if(APPLE)
     set_target_properties(easybind_sample__init__ PROPERTIES
-        BUILD_RPATH "@loader_path/.."
-        INSTALL_RPATH "@loader_path/.."
+        BUILD_RPATH "@loader_path;@loader_path/.."
+        INSTALL_RPATH "@loader_path;@loader_path/.."
     )
 elseif(UNIX)
     set_target_properties(easybind_sample__init__ PROPERTIES
-        BUILD_RPATH "$ORIGIN/.."
-        INSTALL_RPATH "$ORIGIN/.."
+        BUILD_RPATH "$ORIGIN;$ORIGIN/.."
+        INSTALL_RPATH "$ORIGIN;$ORIGIN/.."
     )
 else()
     set_target_properties(easybind_sample__init__ PROPERTIES
