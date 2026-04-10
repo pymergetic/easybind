@@ -31,7 +31,7 @@ easybind-release-tag --minor
 easybind-release-tag --major
 ```
 
-Run from the repo root. If the **only** uncommitted file is **`pyproject.toml`**, it is **committed automatically** (`chore: update pyproject.toml`) before tagging. Any other dirty files abort (use **`--no-auto-commit`** to require a fully clean tree). Without install: **`PYTHONPATH=src python -m easybind.devtools.release_tag`**.
+Run from the repo root (use **`--repo`** for another checkout). If the **only** dirty file is **`pyproject.toml`**, it is **committed**, **pushed to the branch**, then the new tag is created and pushed. Other dirty files abort. **`--no-auto-commit`** requires a clean tree. Without install: **`PYTHONPATH=src python -m easybind.devtools.release_tag`**.
 
 **Tag ≠ PyPI success:** the tag appears on GitHub immediately; the **Publish** workflow can still fail (build, auditwheel, twine). Fix the branch, then tag again or re-run the workflow — PyPI may not have that version until CI goes green.
 

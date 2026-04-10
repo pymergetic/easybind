@@ -23,6 +23,7 @@ from easybind.devtools.release_helpers import (
     latest_v_tag,
     next_v_tag,
     prepare_worktree_for_tag,
+    project_name_from_pyproject,
     tag_push_commands,
 )
 
@@ -43,6 +44,7 @@ __all__ = [
     "latest_v_tag",
     "next_v_tag",
     "prepare_worktree_for_tag",
+    "project_name_from_pyproject",
     "PYPROJECT_AUTO_COMMIT_MSG",
     "pypi_release_exists",
     "single_compatible_pin_version",

@@ -82,7 +82,7 @@ Use **`GITHUB_TOKEN`** for private GitHub repos or higher API rate limits.
 **Other devtools CLIs** (install **`easybind`** first — **`pip install -e .`** from this repo, or PyPI):
 
 ```bash
-easybind-release-tag --dry-run    # next v* tag + git push; sole dirty pyproject.toml is auto-committed
+easybind-release-tag --dry-run    # tag message uses [project].name from pyproject.toml
 easybind-wait-pypi                # poll PyPI until pins resolve (downstream CI)
 ```
 

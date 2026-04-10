@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 import subprocess
+import tomllib
 from pathlib import Path
 
 _TAG_RE = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
@@ -11,6 +12,21 @@ _TAG_RE = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
 
 def _run(cmd: list[str], *, cwd: Path, check: bool = True) -> subprocess.CompletedProcess[str]:
     return subprocess.run(cmd, cwd=cwd, check=check, text=True, capture_output=True)
+
+
+def project_name_from_pyproject(repo: Path) -> str:
+    """``[project].name`` from *repo*/``pyproject.toml`` (PEP 621)."""
+    pp = repo / "pyproject.toml"
+    if not pp.is_file():
+        raise ValueError(f"no pyproject.toml at {pp}")
+    data = tomllib.loads(pp.read_text(encoding="utf-8"))
+    proj = data.get("project")
+    if not isinstance(proj, dict):
+        raise ValueError(f"missing [project] table in {pp}")
+    name = proj.get("name")
+    if not isinstance(name, str) or not name.strip():
+        raise ValueError(f"missing or empty [project] name in {pp}")
+    return name.strip()
 
 
 def latest_v_tag(repo: Path) -> str | None:
@@ -101,7 +117,6 @@ def dirty_paths(repo: Path) -> set[str]:
 
 
 _PYPROJECT_TOML = "pyproject.toml"
-# Message for :func:`prepare_worktree_for_tag` when auto-committing sole ``pyproject.toml`` changes.
 PYPROJECT_AUTO_COMMIT_MSG = "chore: update pyproject.toml"
 
 
@@ -118,25 +133,22 @@ def prepare_worktree_for_tag(
     *,
     auto_commit_pyproject: bool = True,
     commit_message: str = PYPROJECT_AUTO_COMMIT_MSG,
+    remote: str = "origin",
+    branch: str = "main",
+    push_after_commit: bool = True,
 ) -> None:
-    """If the only change is ``pyproject.toml``, ``git add`` + ``git commit`` it.
+    """If the only change is ``pyproject.toml``, commit it (and optionally push the branch).
 
     If the tree is already clean, return. If other paths are dirty, exit with an error.
-    If *auto_commit_pyproject* is false, require a clean tree (same as before).
+    If *auto_commit_pyproject* is false, require a clean tree.
     """
     paths = dirty_paths(repo)
     if not paths:
         return
     if paths == {_PYPROJECT_TOML} and auto_commit_pyproject:
-        subprocess.run(
-            ["git", "add", _PYPROJECT_TOML],
-            cwd=repo,
-            check=True,
-        )
-        subprocess.run(
-            ["git", "commit", "-m", commit_message],
-            cwd=repo,
-            check=True,
-        )
+        subprocess.run(["git", "add", _PYPROJECT_TOML], cwd=repo, check=True)
+        subprocess.run(["git", "commit", "-m", commit_message], cwd=repo, check=True)
+        if push_after_commit:
+            subprocess.run(["git", "push", remote, branch], cwd=repo, check=True)
         return
     ensure_clean_worktree(repo)
