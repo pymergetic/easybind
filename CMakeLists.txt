@@ -137,6 +137,16 @@ set_target_properties(easybind_sample__module__ PROPERTIES
 target_include_directories(easybind_sample__module__ PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
+if(TARGET magic_enum::magic_enum)
+    target_link_libraries(easybind_sample__module__ PRIVATE magic_enum::magic_enum)
+    target_include_directories(easybind_sample__module__ PRIVATE
+        ${magic_enum_SOURCE_DIR}/include
+    )
+else()
+    target_include_directories(easybind_sample__module__ PRIVATE
+        ${magic_enum_SOURCE_DIR}/include
+    )
+endif()
 target_compile_definitions(easybind_sample__module__ PRIVATE EASYBIND_SAMPLE_BUILD)
 if(APPLE)
     set_target_properties(easybind_sample__module__ PROPERTIES

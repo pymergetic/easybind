@@ -62,6 +62,20 @@ struct EASYBIND_SAMPLE_API Widget {
   std::string kind_name() const;
 };
 
+// Parallel “easy” sample type (same behavior, uses WidgetKind_easy).
+struct EASYBIND_SAMPLE_API Widget_easy {
+  std::string name;
+  int value = 0;
+  WidgetKind_easy kind = WidgetKind_easy::Basic;
+
+  Widget_easy();
+  Widget_easy(std::string name_in, int value_in, WidgetKind_easy kind_in);
+
+  int bump(int delta = 1);
+  std::string summary() const;
+  std::string kind_name() const;
+};
+
 // Constants
 EASYBIND_SAMPLE_API extern const int kDefaultValue;
 EASYBIND_SAMPLE_API extern const int kDefaultValue_easy;
@@ -82,7 +96,7 @@ EASYBIND_SAMPLE_API std::string greet_easy(const std::string& name);
 EASYBIND_SAMPLE_API Widget make_widget(const std::string& name,
     int value = 0,
     WidgetKind kind = WidgetKind::Basic);
-EASYBIND_SAMPLE_API Widget make_widget_easy(const std::string& name,
+EASYBIND_SAMPLE_API Widget_easy make_widget_easy(const std::string& name,
     int value = 0,
-    WidgetKind kind = WidgetKind::Basic);
+    WidgetKind_easy kind = WidgetKind_easy::Basic);
 }  // namespace easybind::sample

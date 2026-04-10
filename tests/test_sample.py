@@ -23,8 +23,13 @@ def test_widget() -> None:
     assert widget.summary() == "alpha:3"
     assert widget.bump() == 4
     assert widget.kind_name() == "fancy"
-    easy_widget = sample.make_widget_easy("beta", value=2, kind=sample.WidgetKind.Basic)
+    easy_widget = sample.make_widget_easy("beta", value=2, kind=sample.WidgetKind_easy.Basic)
     assert easy_widget.summary() == "beta:2"
+    assert isinstance(easy_widget, sample.Widget_easy)
+    assert easy_widget.kind_name() == "basic"
+
+    w2 = sample.Widget_easy("gamma", value=1, kind=sample.WidgetKind_easy.Fancy)
+    assert w2.kind_name() == "fancy"
 
 
 def test_exceptions() -> None:

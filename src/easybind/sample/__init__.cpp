@@ -49,6 +49,18 @@ EASYBIND_NS_MODULE_SHARED_OBJECT(easybind::sample, sample, m, true, {
       .def("summary", &Widget::summary)
       .def("kind_name", &Widget::kind_name);
 
+  nanobind::class_<Widget_easy>(m, "Widget_easy")
+      .def(nanobind::init<>())
+      .def(nanobind::init<std::string, int, WidgetKind_easy>(),
+           nanobind::arg("name"),
+           nanobind::arg("value") = 0,
+           nanobind::arg("kind") = WidgetKind_easy::Basic)
+      .def_rw("name", &Widget_easy::name)
+      .def_rw("value", &Widget_easy::value)
+      .def_rw("kind", &Widget_easy::kind)
+      .def("bump", &Widget_easy::bump, nanobind::arg("delta") = 1)
+      .def("summary", &Widget_easy::summary)
+      .def("kind_name", &Widget_easy::kind_name);
 
   // Constants
   m.attr("kDefaultValue") = kDefaultValue;
@@ -81,5 +93,5 @@ EASYBIND_NS_MODULE_SHARED_OBJECT(easybind::sample, sample, m, true, {
       &make_widget_easy,
       nanobind::arg("name"),
       nanobind::arg("value") = 0,
-      nanobind::arg("kind") = WidgetKind::Basic);
+      nanobind::arg("kind") = WidgetKind_easy::Basic);
 });
